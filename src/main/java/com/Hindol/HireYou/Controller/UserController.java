@@ -1,5 +1,6 @@
 package com.Hindol.HireYou.Controller;
 
+import com.Hindol.HireYou.Payload.LoginResponseDTO;
 import com.Hindol.HireYou.Payload.UserDTO;
 import com.Hindol.HireYou.Service.UserService;
 import com.cloudinary.Cloudinary;
@@ -31,5 +32,10 @@ public class UserController {
         else {
             return new ResponseEntity<UserDTO>(savedUserDTO, HttpStatus.BAD_REQUEST);
         }
+    }
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> loginUser(@RequestBody UserDTO userDTO) {
+        LoginResponseDTO loginResponseDTO = this.userService.loginUser(userDTO);
+        return new ResponseEntity<LoginResponseDTO>(loginResponseDTO,HttpStatus.OK);
     }
 }

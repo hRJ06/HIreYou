@@ -1,9 +1,12 @@
 package com.Hindol.HireYou.Service.Implementation;
 
+import com.Hindol.HireYou.Entity.Enum.Role;
 import com.Hindol.HireYou.Entity.User;
+import com.Hindol.HireYou.Payload.LoginResponseDTO;
 import com.Hindol.HireYou.Payload.UserDTO;
 import com.Hindol.HireYou.Repository.UserRepository;
 import com.Hindol.HireYou.Service.UserService;
+import com.Hindol.HireYou.Util.JWTToken;
 import com.cloudinary.Cloudinary;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -25,6 +28,8 @@ public class UserServiceImplementation implements UserService {
     private UserRepository userRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private JWTToken jwtToken;
     @Override
     public UserDTO registerUser(UserDTO userDTO, MultipartFile file) {
         try {
@@ -43,6 +48,8 @@ public class UserServiceImplementation implements UserService {
                 userDTO.setPassword(hashedPassword);
                 userDTO.setImage(uploadedLink);
                 User user = this.modelMapper.map(userDTO,User.class);
+                /* SET ROLE */
+                user.setRole(Role.USER);
                 this.userRepository.save(user);
                 UserDTO savedUserDTO = this.modelMapper.map(userDTO,UserDTO.class);
                 /* SECURITY */
@@ -55,5 +62,34 @@ public class UserServiceImplementation implements UserService {
             return null;
         }
 
+    }
+
+    @Override
+    public LoginResponseDTO loginUser(UserDTO userDTO) {
+        User exisitingUser = this.userRepository.findByEmail(userDTO.getEmail());
+        if(exisitingUser != null) {
+            if(bCryptPasswordEncoder.matches(userDTO.getPassword(),exisitingUser.getPassword())) {
+                String token = this.jwtToken.generateToken(exisitingUser);
+                LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
+                loginResponseDTO.setToken(token);
+                loginResponseDTO.setMessage("Login Success");
+                loginResponseDTO.setRole(exisitingUser.getRole().toString());
+                return loginResponseDTO;
+            }
+            else {
+                LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
+                loginResponseDTO.setToken(null);
+                loginResponseDTO.setMessage("Login Failure");
+                loginResponseDTO.setRole(null);
+                return loginResponseDTO;
+            }
+        }
+        else {
+            LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
+            loginResponseDTO.setToken(null);
+            loginResponseDTO.setMessage("Login Failure");
+            loginResponseDTO.setRole(null);
+            return loginResponseDTO;
+        }
     }
 }
