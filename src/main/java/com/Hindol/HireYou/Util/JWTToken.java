@@ -1,9 +1,8 @@
 package com.Hindol.HireYou.Util;
 
 import com.Hindol.HireYou.Entity.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.Hindol.HireYou.Payload.TokenValidationResultDTO;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
@@ -21,5 +20,18 @@ public class JWTToken {
         claims.put("Role",user.getRole());
         return Jwts.builder().setClaims(claims).setIssuedAt(now).setExpiration(expiryDate).signWith(secretKey).compact();
     }
-
+    public TokenValidationResultDTO verifyToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+            String email = claims.getSubject();
+            String role = (String) claims.get("Role");
+            return new TokenValidationResultDTO(email,"Valid Token",role);
+        }
+        catch (ExpiredJwtException e) {
+            return new TokenValidationResultDTO(null,"Expired Token",null);
+        }
+        catch (JwtException | IllegalArgumentException e) {
+            return new TokenValidationResultDTO(null,"Invalid Token",null);
+        }
+    }
 }

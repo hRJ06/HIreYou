@@ -1,6 +1,8 @@
 package com.Hindol.HireYou.Controller;
 
+import com.Hindol.HireYou.Entity.User;
 import com.Hindol.HireYou.Payload.LoginResponseDTO;
+import com.Hindol.HireYou.Payload.TokenValidationResultDTO;
 import com.Hindol.HireYou.Payload.UserDTO;
 import com.Hindol.HireYou.Service.UserService;
 import com.cloudinary.Cloudinary;
@@ -37,5 +39,16 @@ public class UserController {
     public ResponseEntity<LoginResponseDTO> loginUser(@RequestBody UserDTO userDTO) {
         LoginResponseDTO loginResponseDTO = this.userService.loginUser(userDTO);
         return new ResponseEntity<LoginResponseDTO>(loginResponseDTO,HttpStatus.OK);
+    }
+    @GetMapping("/my-details")
+    public ResponseEntity<?> getDetails(@RequestHeader("Authorization") String bearerToken) {
+        if(bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            UserDTO userDTO = this.userService.getDetails(token);
+            return new ResponseEntity<UserDTO>(userDTO,HttpStatus.OK);
+        }
+        else {
+            return ResponseEntity.badRequest().body("Provide a valid Token");
+        }
     }
 }

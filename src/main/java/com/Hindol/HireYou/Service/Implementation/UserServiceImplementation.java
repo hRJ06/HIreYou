@@ -3,6 +3,7 @@ package com.Hindol.HireYou.Service.Implementation;
 import com.Hindol.HireYou.Entity.Enum.Role;
 import com.Hindol.HireYou.Entity.User;
 import com.Hindol.HireYou.Payload.LoginResponseDTO;
+import com.Hindol.HireYou.Payload.TokenValidationResultDTO;
 import com.Hindol.HireYou.Payload.UserDTO;
 import com.Hindol.HireYou.Repository.UserRepository;
 import com.Hindol.HireYou.Service.UserService;
@@ -90,6 +91,34 @@ public class UserServiceImplementation implements UserService {
             loginResponseDTO.setMessage("Login Failure");
             loginResponseDTO.setRole(null);
             return loginResponseDTO;
+        }
+    }
+
+    @Override
+    public UserDTO getDetails(String token) {
+        try {
+            TokenValidationResultDTO tokenValidationResultDTO = this.jwtToken.verifyToken(token);
+            if("Expired Token".equals(tokenValidationResultDTO.getResult()) || "Invalid Token".equals(tokenValidationResultDTO.getResult())) {
+                return null;
+            }
+            else {
+                String email = tokenValidationResultDTO.getEmail();
+                User user = this.userRepository.findByEmail(email);
+                if(user != null) {
+                    UserDTO userDTO = this.modelMapper.map(user, UserDTO.class);
+                    /* SECURITY PURPOSE */
+                    userDTO.setPassword(null);
+                    return userDTO;
+                }
+                else {
+                    return null;
+                }
+
+            }
+        }
+        catch (Exception e) {
+            log.error(e.getMessage());
+            return null;
         }
     }
 }

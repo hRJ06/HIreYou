@@ -7,4 +7,5 @@ import org.springframework.web.multipart.MultipartFile;
 public interface UserService {
     UserDTO registerUser(UserDTO userDTO, MultipartFile file);
     LoginResponseDTO loginUser(UserDTO userDTO);
+    UserDTO getDetails(String token);
 }
