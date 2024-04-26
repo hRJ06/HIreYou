@@ -1,20 +1,27 @@
 package com.Hindol.HireYou.Service.Implementation;
 
+import com.Hindol.HireYou.Entity.Application;
 import com.Hindol.HireYou.Entity.Listing;
 import com.Hindol.HireYou.Entity.Organization;
+import com.Hindol.HireYou.Entity.User;
 import com.Hindol.HireYou.Payload.ListingDTO;
 import com.Hindol.HireYou.Payload.OrganizationListingDTO;
 import com.Hindol.HireYou.Payload.ResponseDTO;
+import com.Hindol.HireYou.Repository.ApplicationRepository;
 import com.Hindol.HireYou.Repository.ListingRepository;
 import com.Hindol.HireYou.Repository.OrganizationRepository;
+import com.Hindol.HireYou.Repository.UserRepository;
 import com.Hindol.HireYou.Service.ListingService;
+import com.cloudinary.Cloudinary;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -23,9 +30,15 @@ public class ListingServiceImplementation implements ListingService {
     @Autowired
     private OrganizationRepository organizationRepository;
     @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
+    @Autowired
     private ListingRepository listingRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private Cloudinary cloudinary;
     @Override
     public ResponseDTO addListing(String email, String role, ListingDTO listingDTO) {
         try {
@@ -94,10 +107,51 @@ public class ListingServiceImplementation implements ListingService {
         }
     }
 
+    @Override
+    public ResponseDTO addApplication(Integer listingId, MultipartFile file, String email, String role) {
+        try {
+            if(role.equals("ORGANIZATION")) {
+                return new ResponseDTO("You are not authorized",false);
+            }
+            else {
+                /* APPLICANT */
+                User user = this.userRepository.findByEmail(email);
+                if(user != null) {
+                    Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("Unable to find Listing with ID " + listingId));
+                    Map data = this.cloudinary.uploader().upload(file.getBytes(),Map.of());
+                    String uploadedLink = (String) data.get("secure_url");
+                    /* CREATE AN APPLICATION */
+                    Application application = new Application();
+                    application.setUser(user);
+                    application.setListing(listing);
+                    application.setApplication(uploadedLink);
+                    /* SAVE IN DB */
+                    addApplication(application,user,listing);
+                    return new ResponseDTO("Successfully added Application",true);
+                }
+                else {
+                    return new ResponseDTO("You need to register first.",false);
+                }
+            }
+        }
+        catch (Exception e) {
+            log.error("An error occured while adding application - ", e);
+            return new ResponseDTO("Please Try Again",false);
+        }
+    }
+
     /* UTIL FOR SECURITY AND ENSURING ATOMICITY */
     @Transactional
     private void transactionalSave(Listing newListing,Organization organization) {
         this.listingRepository.save(newListing);
         this.organizationRepository.save(organization);
+    }
+    @Transactional
+    private void addApplication(Application application,User user,Listing listing) {
+        Application savedApplication = this.applicationRepository.save(application);
+        user.getApplicationList().add(savedApplication);
+        listing.getApplicationList().add(savedApplication);
+        this.userRepository.save(user);
+        this.listingRepository.save(listing);
     }
 }

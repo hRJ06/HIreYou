@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -35,5 +36,12 @@ public class ListingController {
         String role = (String) request.getAttribute("Role");
         OrganizationListingDTO organizationListingDTO = this.listingService.getAllListingDetails(email,role);
         return new ResponseEntity<OrganizationListingDTO>(organizationListingDTO,organizationListingDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
+    @PostMapping("/add-application/{listingId}")
+    public ResponseEntity<ResponseDTO> addApplication(HttpServletRequest request, @PathVariable Integer listingId, @RequestParam("file") MultipartFile application) {
+        String email = (String) request.getAttribute("Email");
+        String role = (String) request.getAttribute("Role");
+        ResponseDTO responseDTO = this.listingService.addApplication(listingId,application,email,role);
+        return new ResponseEntity<ResponseDTO>(responseDTO,responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }
