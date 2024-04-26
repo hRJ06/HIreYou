@@ -4,6 +4,7 @@ import com.Hindol.HireYou.Entity.Application;
 import com.Hindol.HireYou.Entity.Listing;
 import com.Hindol.HireYou.Entity.Organization;
 import com.Hindol.HireYou.Entity.User;
+import com.Hindol.HireYou.Payload.ListingApplicationDTO;
 import com.Hindol.HireYou.Payload.ListingDTO;
 import com.Hindol.HireYou.Payload.OrganizationListingDTO;
 import com.Hindol.HireYou.Payload.ResponseDTO;
@@ -137,6 +138,35 @@ public class ListingServiceImplementation implements ListingService {
         catch (Exception e) {
             log.error("An error occured while adding application - ", e);
             return new ResponseDTO("Please Try Again",false);
+        }
+    }
+
+    @Override
+    public ListingApplicationDTO getApplicationForListing(String email, String role, Integer listingId) {
+        try {
+            if(role.equals("ORGANIZATION")) {
+                Organization organization = this.organizationRepository.findByEmail(email);
+                if(organization != null) {
+                    Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("Unable to find Listing with ID " + listingId));
+                    if(listing.getOrganization().equals(organization)) {
+                        List<Application> applicationList = listing.getApplicationList();
+                        return new ListingApplicationDTO("Successfully fetched all Applications",true,applicationList);
+                    }
+                    else {
+                        return new ListingApplicationDTO("This is not your listing",false,List.of());
+                    }
+                }
+                else {
+                    return new ListingApplicationDTO("You are not registered with us.",false,List.of());
+                }
+            }
+            else {
+                return new ListingApplicationDTO("You are not authorized.",false,List.of());
+            }
+        }
+        catch (Exception e) {
+            log.error("An error occured while fetching application - ", e);
+            return new ListingApplicationDTO("Please Try Again",false,List.of());
         }
     }
 

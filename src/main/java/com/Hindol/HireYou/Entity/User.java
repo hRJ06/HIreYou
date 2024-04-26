@@ -29,6 +29,7 @@ public class User {
     private String image;
     private String collegeName;
     private String address;
+    @JsonIgnore
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Application> applicationList;
 }

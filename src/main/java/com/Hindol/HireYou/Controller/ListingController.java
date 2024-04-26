@@ -1,5 +1,7 @@
 package com.Hindol.HireYou.Controller;
 
+import com.Hindol.HireYou.Entity.Application;
+import com.Hindol.HireYou.Payload.ListingApplicationDTO;
 import com.Hindol.HireYou.Payload.ListingDTO;
 import com.Hindol.HireYou.Payload.OrganizationListingDTO;
 import com.Hindol.HireYou.Payload.ResponseDTO;
@@ -43,5 +45,12 @@ public class ListingController {
         String role = (String) request.getAttribute("Role");
         ResponseDTO responseDTO = this.listingService.addApplication(listingId,application,email,role);
         return new ResponseEntity<ResponseDTO>(responseDTO,responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
+    @GetMapping("/get-application/{listingId}")
+    public ResponseEntity<ListingApplicationDTO> getApplicationForListing(HttpServletRequest request,@PathVariable Integer listingId) {
+        String email = (String) request.getAttribute("Email");
+        String role = (String) request.getAttribute("Role");
+        ListingApplicationDTO listingApplicationDTO = this.listingService.getApplicationForListing(email,role,listingId);
+        return new ResponseEntity<ListingApplicationDTO>(listingApplicationDTO,listingApplicationDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }

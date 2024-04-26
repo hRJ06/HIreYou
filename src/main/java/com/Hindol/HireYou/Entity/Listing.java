@@ -1,5 +1,6 @@
 package com.Hindol.HireYou.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,9 +27,11 @@ public class Listing {
     private List<String> skills;
 
     private String salary;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
+    @JsonIgnore
     @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL)
     private List<Application> applicationList;
     @CreationTimestamp

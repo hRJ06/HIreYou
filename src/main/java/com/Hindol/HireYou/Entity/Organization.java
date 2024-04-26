@@ -1,6 +1,7 @@
 package com.Hindol.HireYou.Entity;
 
 import com.Hindol.HireYou.Entity.Enum.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,6 +27,7 @@ public class Organization {
     private Role role;
     private String location;
     private String image;
+    @JsonIgnore
     @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
     private List<Listing> listingList;
 }

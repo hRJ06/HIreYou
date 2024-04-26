@@ -1,5 +1,6 @@
 package com.Hindol.HireYou.Service;
 
+import com.Hindol.HireYou.Payload.ListingApplicationDTO;
 import com.Hindol.HireYou.Payload.ListingDTO;
 import com.Hindol.HireYou.Payload.OrganizationListingDTO;
 import com.Hindol.HireYou.Payload.ResponseDTO;
@@ -12,4 +13,5 @@ public interface ListingService {
     ListingDTO getDetails(Integer listingId);
     OrganizationListingDTO getAllListingDetails(String email, String Role);
     ResponseDTO addApplication(Integer listingId, MultipartFile file,String email,String role);
+    ListingApplicationDTO getApplicationForListing(String email,String role,Integer listingId);
 }
