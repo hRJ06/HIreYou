@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -27,4 +29,6 @@ public class User {
     private String image;
     private String collegeName;
     private String address;
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<Application> applicationList;
 }

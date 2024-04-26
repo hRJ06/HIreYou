@@ -3,6 +3,7 @@ package com.Hindol.HireYou.Service.Implementation;
 import com.Hindol.HireYou.Entity.Listing;
 import com.Hindol.HireYou.Entity.Organization;
 import com.Hindol.HireYou.Payload.ListingDTO;
+import com.Hindol.HireYou.Payload.OrganizationListingDTO;
 import com.Hindol.HireYou.Payload.ResponseDTO;
 import com.Hindol.HireYou.Repository.ListingRepository;
 import com.Hindol.HireYou.Repository.OrganizationRepository;
@@ -12,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -52,6 +56,44 @@ public class ListingServiceImplementation implements ListingService {
             return new ResponseDTO("Please Try Again later",false);
         }
     }
+
+    @Override
+    public ListingDTO getDetails(Integer listingId) {
+        try {
+            Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("Unable to fetch Course with ID " +  listingId));
+            ListingDTO listingDTO = this.modelMapper.map(listing,ListingDTO.class);
+            return listingDTO;
+        }
+        catch (Exception e) {
+            log.error("An error occured while fetching details -", e);
+            return null;
+        }
+    }
+
+    @Override
+    public OrganizationListingDTO getAllListingDetails(String email, String Role) {
+        try {
+            if(Role.equals("User")) {
+                return new OrganizationListingDTO("You are not authorized.",false,List.of());
+            }
+            else {
+                Organization organization = this.organizationRepository.findByEmail(email);
+                if(organization != null) {
+                    List<Listing> listingList = organization.getListingList();
+                    List<ListingDTO> listingDTOS = listingList.stream().map(listing -> this.modelMapper.map(listing,ListingDTO.class)).collect(Collectors.toList());
+                    return new OrganizationListingDTO("Successfully fetched all Listings",true,listingDTOS);
+                }
+                else {
+                    return new OrganizationListingDTO("You are not registered as an Organization.",false,List.of());
+                }
+            }
+        }
+        catch (Exception e) {
+            log.error("An error occured while fetching details -", e);
+            return null;
+        }
+    }
+
     /* UTIL FOR SECURITY AND ENSURING ATOMICITY */
     @Transactional
     private void transactionalSave(Listing newListing,Organization organization) {

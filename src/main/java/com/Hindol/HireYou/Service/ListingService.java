@@ -1,8 +1,13 @@
 package com.Hindol.HireYou.Service;
 
 import com.Hindol.HireYou.Payload.ListingDTO;
+import com.Hindol.HireYou.Payload.OrganizationListingDTO;
 import com.Hindol.HireYou.Payload.ResponseDTO;
+
+import java.util.List;
 
 public interface ListingService {
     ResponseDTO addListing(String email, String role, ListingDTO listingDTO);
+    ListingDTO getDetails(Integer listingId);
+    OrganizationListingDTO getAllListingDetails(String email, String Role);
 }

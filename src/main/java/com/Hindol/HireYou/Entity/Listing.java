@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -27,4 +29,8 @@ public class Listing {
     @ManyToOne
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
+    @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL)
+    private List<Application> applicationList;
+    @CreationTimestamp
+    private Date createdAt;
 }

@@ -36,6 +36,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Invalid Token");
                     return false;
                 }
+
                 else {
                     log.info("Token Validation Successful {}",tokenValidationResultDTO.getResult());
                     request.setAttribute("Role",tokenValidationResultDTO.getRole());
