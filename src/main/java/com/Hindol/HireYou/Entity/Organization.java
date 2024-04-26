@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,4 +26,6 @@ public class Organization {
     private Role role;
     private String location;
     private String image;
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
+    private List<Listing> listingList;
 }

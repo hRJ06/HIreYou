@@ -2,6 +2,7 @@ package com.Hindol.HireYou.Controller;
 
 import com.Hindol.HireYou.Payload.LoginResponseDTO;
 import com.Hindol.HireYou.Payload.OrganizationDTO;
+import com.Hindol.HireYou.Payload.UserDTO;
 import com.Hindol.HireYou.Service.OrganizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,5 +36,16 @@ public class OrganizationController {
     public ResponseEntity<LoginResponseDTO> loginOrganization(@RequestBody OrganizationDTO organizationDTO) {
         LoginResponseDTO loginResponseDTO = this.organizationService.loginOrganization(organizationDTO);
         return new ResponseEntity<LoginResponseDTO>(loginResponseDTO,HttpStatus.OK);
+    }
+    @GetMapping("/my-details")
+    public ResponseEntity<?> getDetails(@RequestHeader("Authorization") String bearerToken) {
+        if(bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            String token = bearerToken.substring(7);
+            OrganizationDTO organizationDTO = this.organizationService.getDetails(token);
+            return new ResponseEntity<OrganizationDTO>(organizationDTO,HttpStatus.OK);
+        }
+        else {
+            return ResponseEntity.badRequest().body("Provide a valid Token");
+        }
     }
 }

@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TokenValidationResultDTO {
     private String email;
-    private String role;
     private String result;
+    private String role;
 }
