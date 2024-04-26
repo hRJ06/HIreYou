@@ -1,5 +1,6 @@
 package com.Hindol.HireYou.Util;
 
+import com.Hindol.HireYou.Entity.Organization;
 import com.Hindol.HireYou.Entity.User;
 import com.Hindol.HireYou.Payload.TokenValidationResultDTO;
 import io.jsonwebtoken.*;
@@ -18,6 +19,13 @@ public class JWTToken {
         Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
         Claims claims = Jwts.claims().setSubject(user.getEmail());
         claims.put("Role",user.getRole());
+        return Jwts.builder().setClaims(claims).setIssuedAt(now).setExpiration(expiryDate).signWith(secretKey).compact();
+    }
+    public String generateToken(Organization organization) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + EXPIRATION_TIME);
+        Claims claims = Jwts.claims().setSubject(organization.getEmail());
+        claims.put("Role",organization.getRole());
         return Jwts.builder().setClaims(claims).setIssuedAt(now).setExpiration(expiryDate).signWith(secretKey).compact();
     }
     public TokenValidationResultDTO verifyToken(String token) {
