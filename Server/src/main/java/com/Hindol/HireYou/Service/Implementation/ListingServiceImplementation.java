@@ -170,6 +170,19 @@ public class ListingServiceImplementation implements ListingService {
         }
     }
 
+    @Override
+    public List<ListingDTO> getAllListings() {
+        try {
+            List<Listing> listingList = this.listingRepository.findAll();
+            List<ListingDTO> listingDTOS = listingList.stream().map(listing -> this.modelMapper.map(listing,ListingDTO.class)).collect(Collectors.toList());
+            return listingDTOS;
+        }
+        catch (Exception e) {
+            log.error("An error occured while fetching listing - ", e);
+            return List.of();
+        }
+    }
+
     /* UTIL FOR SECURITY AND ENSURING ATOMICITY */
     @Transactional
     private void transactionalSave(Listing newListing,Organization organization) {

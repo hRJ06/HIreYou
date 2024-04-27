@@ -1,6 +1,5 @@
 package com.Hindol.HireYou.Controller;
 
-import com.Hindol.HireYou.Entity.Application;
 import com.Hindol.HireYou.Payload.ListingApplicationDTO;
 import com.Hindol.HireYou.Payload.ListingDTO;
 import com.Hindol.HireYou.Payload.OrganizationListingDTO;
@@ -17,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/listing")
+@CrossOrigin("*")
 public class ListingController {
     @Autowired
     private ListingService listingService;
@@ -52,5 +52,10 @@ public class ListingController {
         String role = (String) request.getAttribute("Role");
         ListingApplicationDTO listingApplicationDTO = this.listingService.getApplicationForListing(email,role,listingId);
         return new ResponseEntity<ListingApplicationDTO>(listingApplicationDTO,listingApplicationDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
+    @GetMapping("/all-listings")
+    public ResponseEntity<List<ListingDTO>> getAllListings() {
+        List<ListingDTO> listingDTOS = this.listingService.getAllListings();
+        return new ResponseEntity<List<ListingDTO>>(listingDTOS,HttpStatus.OK);
     }
 }

@@ -1,11 +1,14 @@
 // Login.js
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const [tab, setTab] = useState('user');
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
     const [isSigningUp, setIsSigningUp] = useState(false);
 
     const toggleTab = (newTab) => {
@@ -25,24 +28,27 @@ const Login = () => {
     };
 
     const handleLogin = () => {
-        // Handle login logic here
-        console.log('Logging in...');
+        const requestBody = {
+            email: email,
+            password: password
+        };
+        axios.post(`http://localhost:8080/api/v1/${tab === 'user' ? 'user' : 'organization'}/login`, requestBody)
+            .then(response => {
+                sessionStorage.setItem('token',response?.data?.token);
+                sessionStorage.setItem('name',response?.data?.name);
+                sessionStorage.setItem('role',response?.data?.role);
+                navigate('/');
+            })
+            .catch(error => {
+                console.error('Error logging in:', error);
+            });
     };
 
     const handleForgetPassword = () => {
-        // Handle forget password logic here
         console.log('Forget password...');
     };
 
-    const handleSignUp = () => {
-        // Handle sign up logic here
-        console.log('Signing up...');
-    };
-
-    const handleToggleSignUp = () => {
-        setIsSigningUp(!isSigningUp);
-    };
-
+    
     return (
         <div className="min-h-screen flex items-center justify-center bg-blue-100 font-ubuntu">
             <div className="bg-white rounded shadow p-8 w-96 h-[500px]">
@@ -98,7 +104,7 @@ const Login = () => {
                 <hr className="mb-4" />
                 <div className="flex justify-between items-center">
                     <p className="text-xs uppercase tracking-[1.2px]">Don't have an account?</p>
-                    <button className="text-xs text-blue-500 hover:underline uppercase tracking-[1.3px]" onClick={handleToggleSignUp}>
+                    <button className="text-xs text-blue-500 hover:underline uppercase tracking-[1.3px]" onClick={() => navigate('/sign-up')}>
                         Sign Up
                     </button>
                 </div>

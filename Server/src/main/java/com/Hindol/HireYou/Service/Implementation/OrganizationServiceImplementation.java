@@ -72,6 +72,7 @@ public class OrganizationServiceImplementation implements OrganizationService {
             if(bCryptPasswordEncoder.matches(organizationDTO.getPassword(), exisitingOrganization.getPassword())) {
                 String token = this.jwtToken.generateToken(exisitingOrganization);
                 LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
+                loginResponseDTO.setName(exisitingOrganization.getName());
                 loginResponseDTO.setToken(token);
                 loginResponseDTO.setMessage("Login Success");
                 loginResponseDTO.setRole(exisitingOrganization.getRole().toString());

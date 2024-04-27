@@ -14,4 +14,5 @@ public interface ListingService {
     OrganizationListingDTO getAllListingDetails(String email, String Role);
     ResponseDTO addApplication(Integer listingId, MultipartFile file,String email,String role);
     ListingApplicationDTO getApplicationForListing(String email,String role,Integer listingId);
+    List<ListingDTO> getAllListings();
 }

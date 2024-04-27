@@ -1,7 +1,25 @@
 // Home.js
-import React from 'react';
+import React, { useState } from 'react';
 
 const Home = () => {
+    const [dropdownVisible, setDropdownVisible] = useState(false);
+
+    // Function to toggle dropdown visibility
+    const toggleDropdown = () => {
+        setDropdownVisible(!dropdownVisible);
+    };
+    const generateInitials = () => {
+        const name = sessionStorage.getItem('name');
+        if (name) {
+            const parts = name.split(' ');
+            if (parts.length > 1) {
+                return parts[0].charAt(0) + parts[1].charAt(0);
+            } else {
+                return parts[0].charAt(0) + parts[0].charAt(parts[0].length - 1);
+            }
+        }
+        return '';
+    };
     return (
         <div>
             {/* Navigation Bar */}
@@ -16,18 +34,48 @@ const Home = () => {
                         />
                     </div>
                     {/* Navigation Links */}
-                    <ul className="flex space-x-4">
+                    <ul className="flex space-x-4 items-baseline">
+                        {sessionStorage.getItem('token') ? (
+                            <li>
+                                {/* Render avatar */}
+                                <div className="relative">
+                                    <button className="focus:outline-none" onClick={() => toggleDropdown()}>
+                                        {/* Replace 'Your Name' with the name from sessionStorage */}
+                                        <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                                            <span className="text-black font-bold">
+                                                {/* Generate initials from sessionStorage.name */}
+                                                {generateInitials()}
+                                            </span>
+                                        </div>
+                                    </button>
+                                    {/* Dropdown menu */}
+                                    <div className={"absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg " + (dropdownVisible ? 'block' : 'hidden')}>
+                                        <div className="py-1">
+                                            <a href="/settings" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 first-letter:text-lg tracking-[1.2px]">Settings</a>
+                                            <a href="/your-applications" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 first-letter:text-lg tracking-[1.2px]">Applications</a>
+                                            {/* Add more dropdown items as needed */}
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        ) : (
+                            <li>
+                                {/* Render Login link */}
+                                <a href="/login" className="hover:text-gray-400 hover:underline">Login</a>
+                            </li>
+                        )}
                         <li>
-                            <a href="/about-us" className="hover:text-gray-400 hover:underline">About Us</a>
+                            {/* Render Signup or Listings link */}
+                            <a href={sessionStorage.getItem('token') ? "/listings" : "/sign-up"} className="hover:text-gray-400 hover:underline tracking-[1.1px]">
+                                {sessionStorage.getItem('token') ? "Explore" : "Sign up"}
+                            </a>
                         </li>
                         <li>
-                            <a href="/login" className="hover:text-gray-400 hover:underline">Login</a>
+                            {/* Render About Us link */}
+                            <a href="/about-us" className="hover:text-gray-400 hover:underline tracking-[1.1px]">About Us</a>
                         </li>
-                        <li>
-                            <a href="/sign-up" className="hover:text-gray-400 hover:underline">Sign up</a>
-                        </li>
-                        {/* Add more links as needed */}
                     </ul>
+
                 </div>
             </nav>
 

@@ -72,6 +72,7 @@ public class UserServiceImplementation implements UserService {
             if(bCryptPasswordEncoder.matches(userDTO.getPassword(),exisitingUser.getPassword())) {
                 String token = this.jwtToken.generateToken(exisitingUser);
                 LoginResponseDTO loginResponseDTO = new LoginResponseDTO();
+                loginResponseDTO.setName(exisitingUser.getFirstName() + " " + exisitingUser.getLastName());
                 loginResponseDTO.setToken(token);
                 loginResponseDTO.setMessage("Login Success");
                 loginResponseDTO.setRole(exisitingUser.getRole().toString());
