@@ -40,6 +40,9 @@ public class ApplicationServiceImplementation implements ApplicationService {
                 }
                 else {
                     Application application = this.applicationRepository.findById(applicationId).orElseThrow(() -> new RuntimeException("Unable to find Application with ID " + applicationId));
+                    if(application.getStatus() != Status.DUE) {
+                        return new ResponseDTO("You can't change Application Status now.",false);
+                    }
                     this.updateApplication(statusCode,application);
                     return new ResponseDTO("Successfully Updated Application",true);
                 }
