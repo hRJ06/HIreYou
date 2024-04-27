@@ -24,7 +24,7 @@ const Home = () => {
                             <a href="/login" className="hover:text-gray-400 hover:underline">Login</a>
                         </li>
                         <li>
-                            <a href="#" className="hover:text-gray-400 hover:underline">Sign up</a>
+                            <a href="/sign-up" className="hover:text-gray-400 hover:underline">Sign up</a>
                         </li>
                         {/* Add more links as needed */}
                     </ul>
