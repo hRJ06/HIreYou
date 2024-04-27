@@ -127,7 +127,7 @@ const SignUp = () => {
                         <input
                             type="text"
                             name="collegeName"
-                            placeholder="First Name"
+                            placeholder="College"
                             className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
                             value={userFormData.collegeName}
                             onChange={handleUserFormChange}
@@ -210,9 +210,9 @@ const SignUp = () => {
                         <input
                             type="text"
                             name="website"
-                            placeholder="First Name"
+                            placeholder="Website"
                             className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
-                            value={organizationFormData.collegeName}
+                            value={organizationFormData.website}
                             onChange={handleOrganizationFormChange}
                         />
                         <label className="block mb-2 uppercase tracking-[1.2px]">Location</label>
