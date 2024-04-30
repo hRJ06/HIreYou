@@ -52,7 +52,7 @@ const Home = () => {
                                     <div className={"absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg " + (dropdownVisible ? 'block' : 'hidden')}>
                                         <div className="py-1">
                                             <a href="/settings" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 first-letter:text-lg tracking-[1.2px]">Settings</a>
-                                            <a href="/your-applications" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 first-letter:text-lg tracking-[1.2px]">Applications</a>
+                                            <a href="/applications" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 first-letter:text-lg tracking-[1.2px]">Applications</a>
                                             {/* Add more dropdown items as needed */}
                                         </div>
                                     </div>

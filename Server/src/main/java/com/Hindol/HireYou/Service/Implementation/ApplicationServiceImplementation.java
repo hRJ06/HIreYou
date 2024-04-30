@@ -5,8 +5,10 @@ import com.Hindol.HireYou.Entity.Enum.Status;
 import com.Hindol.HireYou.Entity.Organization;
 import com.Hindol.HireYou.Entity.User;
 import com.Hindol.HireYou.Payload.ResponseDTO;
+import com.Hindol.HireYou.Payload.UserApplicationDTO;
 import com.Hindol.HireYou.Repository.ApplicationRepository;
 import com.Hindol.HireYou.Repository.OrganizationRepository;
+import com.Hindol.HireYou.Repository.UserRepository;
 import com.Hindol.HireYou.Service.ApplicationService;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
@@ -17,6 +19,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 @Slf4j
 @Service
 public class ApplicationServiceImplementation implements ApplicationService {
@@ -24,6 +30,8 @@ public class ApplicationServiceImplementation implements ApplicationService {
     private ApplicationRepository applicationRepository;
     @Autowired
     private OrganizationRepository organizationRepository;
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private JavaMailSender javaMailSender;
     @Value("${spring.mail.username}") private String sender;
@@ -56,6 +64,33 @@ public class ApplicationServiceImplementation implements ApplicationService {
             return new ResponseDTO("Please Try Again Later.",false);
         }
     }
+
+    @Override
+    public UserApplicationDTO getUserApplication(String email, String role) {
+        try {
+            if(role.equals("USER")) {
+                User user  = this.userRepository.findByEmail(email);
+                if(user != null) {
+                    List<Application> applicationList = this.applicationRepository.findByUser(user);
+                    Comparator<Application> comparator = Comparator.comparing(Application::getCreatedAt).reversed();
+                    Collections.sort(applicationList,comparator);
+                    return new UserApplicationDTO(true,"Successfully fetched all applications",applicationList);
+                }
+                else {
+                    return new UserApplicationDTO(false,"You are not registered with us.",List.of());
+                }
+
+            }
+            else {
+                return new UserApplicationDTO(false,"You are not authorized",List.of());
+            }
+        }
+        catch (Exception e) {
+            log.error("An error occurred while fetching user applications - ",e);
+            return new UserApplicationDTO(false,"Please Try Again Later",List.of());
+        }
+    }
+
     @Transactional
     private void updateApplication(Integer statusCode,Application application) {
         try {

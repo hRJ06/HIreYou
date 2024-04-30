@@ -34,9 +34,9 @@ const Login = () => {
         };
         axios.post(`http://localhost:8080/api/v1/${tab === 'user' ? 'user' : 'organization'}/login`, requestBody)
             .then(response => {
-                sessionStorage.setItem('token',response?.data?.token);
-                sessionStorage.setItem('name',response?.data?.name);
-                sessionStorage.setItem('role',response?.data?.role);
+                sessionStorage.setItem('token', response?.data?.token);
+                sessionStorage.setItem('name', response?.data?.name);
+                sessionStorage.setItem('role', response?.data?.role);
                 navigate('/');
             })
             .catch(error => {
@@ -48,7 +48,7 @@ const Login = () => {
         console.log('Forget password...');
     };
 
-    
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-blue-100 font-ubuntu">
             <div className="bg-white rounded shadow p-8 w-96 h-[500px]">

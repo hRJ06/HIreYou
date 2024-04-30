@@ -1,10 +1,10 @@
-package com.Hindol.Classroom.Configuration;
-
+package com.Hindol.HireYou.Configuration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+
 
 @Configuration
 public class CorsConfig {
@@ -24,5 +24,6 @@ public class CorsConfig {
         source.registerCorsConfiguration("/**", config);
 
         return new CorsFilter(source);
+
     }
 }
