@@ -28,4 +28,11 @@ public class ApplicationController {
         UserApplicationDTO userApplicationDTO = this.applicationService.getUserApplication(email,role);
         return new ResponseEntity<UserApplicationDTO>(userApplicationDTO,userApplicationDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
+    @PutMapping("/withdraw-application/{applicationId}")
+    public ResponseEntity<ResponseDTO> withdrawApplication(HttpServletRequest request,@PathVariable Integer applicationId) {
+        String email = (String) request.getAttribute("Email");
+        String role = (String) request.getAttribute("Role");
+        ResponseDTO responseDTO = this.applicationService.withdrawApplication(email,role,applicationId);
+        return new ResponseEntity<ResponseDTO>(responseDTO,responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
 }

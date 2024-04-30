@@ -91,6 +91,41 @@ public class ApplicationServiceImplementation implements ApplicationService {
         }
     }
 
+    @Override
+    public ResponseDTO withdrawApplication(String email, String role, Integer applicationId) {
+        try {
+            if(role.equals("USER")) {
+                User user = this.userRepository.findByEmail(email);
+                if(user != null) {
+                    Application application = this.applicationRepository.findById(applicationId).orElseThrow(() -> new RuntimeException("Unable to find Application with ID " + applicationId));
+                    if(application.getUser().equals(user)) {
+                        if(application.getStatus() != Status.DUE) {
+                            return new ResponseDTO("You are not allowed to withdraw now.",false);
+                        }
+                        else {
+                            this.applicationRepository.delete(application);
+                            return new ResponseDTO("Successfully withdraw application.",true);
+                        }
+                    }
+                    else {
+                        return new ResponseDTO("You are not authorized.",false);
+                    }
+                }
+                else {
+                    return new ResponseDTO("You are not registered.",false);
+                }
+            }
+            else  {
+                return new ResponseDTO("You are not authorized.",false);
+            }
+
+        }
+        catch (Exception e) {
+            log.error("An error occurred while withdrawing application - ", e);
+            return new ResponseDTO("Please Try Again Later.",false);
+        }
+    }
+
     @Transactional
     private void updateApplication(Integer statusCode,Application application) {
         try {

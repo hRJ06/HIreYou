@@ -9,4 +9,5 @@ import java.util.List;
 public interface ApplicationService {
     ResponseDTO updateApplicationStatus(String email, String role, Integer statusCode,Integer applicationId);
     UserApplicationDTO getUserApplication(String email, String role);
+    ResponseDTO withdrawApplication(String email,String role,Integer applicationId);
 }
