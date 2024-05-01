@@ -73,9 +73,11 @@ const Home = () => {
                         )}
                         <li>
                             {/* Render Signup or Listings link */}
-                            <a href={sessionStorage.getItem('token') ? "/listings" : "/sign-up"} className="hover:text-gray-400 hover:underline tracking-[1.1px]">
-                                {sessionStorage.getItem('token') ? "Explore" : "Sign up"}
-                            </a>
+                            {
+                                sessionStorage.getItem('role') === 'USER' && <a href={sessionStorage.getItem('token') ? "/listings" : "/sign-up"} className="hover:text-gray-400 hover:underline tracking-[1.1px]">
+                                    {sessionStorage.getItem('token') ? "Explore" : "Sign up"}
+                                </a>
+                            }
                         </li>
                         <li>
                             {/* Render About Us link */}

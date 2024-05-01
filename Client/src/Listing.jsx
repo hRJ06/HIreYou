@@ -3,60 +3,71 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import UploadModal from './UploadModal';
 import { useNavigate } from 'react-router-dom';
+import AddListingModal from './AddListingModal'; // Import the AddListingModal component
+
 const Listings = () => {
     const [listings, setListings] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedListingId, setSelectedListingId] = useState(null);
     const navigate = useNavigate();
     const token = sessionStorage.getItem('token');
-    useEffect(() => {
-        const fetchListings = async () => {
-            const role = sessionStorage.getItem('role');
-            if (!token) navigate('/login');
-            console.log(token)
-            try {
-                toast.loading();
-                let response;
-                if (role === 'USER') {
-                    response = await axios({
-                        method: 'GET',
-                        url: 'http://localhost:8080/api/v1/listing/all-listings',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                } else {
-                    response = await axios({
-                        method: 'GET',
-                        url: 'http://localhost:8080/api/v1/listing/my-detail',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                }
-                console.log(response);
-                if (sessionStorage.getItem('role') === 'USER') {
-                    setListings(response?.data)
-                }
-                else {
-                    setListings(response?.data?.listingDTOS)
-                }
-                toast.dismiss();
-            } catch (error) {
-                console.error(error);
+    const fetchListings = async () => {
+        const role = sessionStorage.getItem('role');
+        if (!token) navigate('/login');
+        console.log(token);
+        try {
+            toast.loading();
+            let response;
+            if (role === 'USER') {
+                response = await axios({
+                    method: 'GET',
+                    url: 'http://localhost:8080/api/v1/listing/all-listings',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            } else {
+                response = await axios({
+                    method: 'GET',
+                    url: 'http://localhost:8080/api/v1/listing/my-detail',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
             }
-        };
+            console.log(response);
+            if (sessionStorage.getItem('role') === 'USER') {
+                setListings(response?.data);
+            } else {
+                setListings(response?.data?.listingDTOS);
+            }
+            toast.dismiss();
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    useEffect(() => {
         fetchListings();
     }, []);
 
-
-
-    const handleApply = (listingId) => { // Accept listingId as parameter
-        setSelectedListingId(listingId); // Set the selected listing ID
+    const handleApply = (listingId) => {
+        setSelectedListingId(listingId);
         setModalOpen(true);
     };
 
     const handleCloseModal = () => {
+        setModalOpen(false);
+    };
+
+    const handleViewApplications = async (listingId) => {
+        navigate(`/applications/${listingId}`);
+    };
+
+    const handleOpenNewListingModal = () => {
+        setModalOpen(true);
+    };
+
+    const handleCloseNewListingModal = () => {
         setModalOpen(false);
     };
     const handleSubmit = async (file) => {
@@ -91,8 +102,24 @@ const Listings = () => {
             setModalOpen(false);
         }
     };
-    const handleViewApplications = async (listingId) => {
-        navigate(`/applications/${listingId}`)
+
+    const handleAddNewListing = async (newListingData) => {
+        try {
+            toast.loading();
+            const response = await axios.post('http://localhost:8080/api/v1/listing/create', newListingData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log('New listing added:', response.data);
+            fetchListings();
+            setModalOpen(false);
+            toast.dismiss();
+            toast.success("New Listing Added");
+        } catch (error) {
+            console.error('Error adding new listing:', error);
+        }
     };
 
     return (
@@ -128,7 +155,13 @@ const Listings = () => {
                     </div>
                 </div>
             ))}
+            {!sessionStorage.getItem('role') !== 'USER' && (
+                <div className='flex justify-end'>
+                    <button onClick={handleOpenNewListingModal} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4 uppercase tracking-wider">+</button>
+                </div>
+            )}
             <UploadModal isOpen={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} />
+            <AddListingModal isOpen={modalOpen} onClose={handleCloseNewListingModal} onSubmit={handleAddNewListing} />
         </div>
     );
 
