@@ -20,6 +20,12 @@ const Home = () => {
         }
         return '';
     };
+    const handleLogout = () => {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('name');
+        sessionStorage.removeItem('role');
+        window.location.reload();
+    }
     return (
         <div>
             {/* Navigation Bar */}
@@ -52,7 +58,8 @@ const Home = () => {
                                     <div className={"absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg " + (dropdownVisible ? 'block' : 'hidden')}>
                                         <div className="py-1">
                                             <a href="/settings" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 first-letter:text-lg tracking-[1.2px]">Settings</a>
-                                            <a href="/applications" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 first-letter:text-lg tracking-[1.2px]">Applications</a>
+                                            <a href={sessionStorage.getItem('role') === 'USER' ? '/applications' : 'listings'} className="block px-4 py-2 text-gray-800 hover:bg-gray-200 first-letter:text-lg tracking-[1.2px]">{sessionStorage.getItem('role') === 'USER' ? 'Applications' : 'Listings'}</a>
+                                            <div onClick={() => handleLogout()} className="block px-4 py-2 text-gray-800 hover:bg-gray-200 first-letter:text-lg tracking-[1.2px]">Log Out</div>
                                             {/* Add more dropdown items as needed */}
                                         </div>
                                     </div>

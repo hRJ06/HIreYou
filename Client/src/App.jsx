@@ -6,6 +6,7 @@ import Login from "./Login";
 import SignUp from "./SignUp";
 import Listings from "./Listing";
 import YourApplications from "./YourApplications";
+import ApplicationsPage from "./Applications";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/listings" element={<Listings />}></Route>
       <Route path="/about-us" element={<AboutUs />}></Route>
       <Route path='/applications' element={<YourApplications />}></Route>
+      <Route path="/applications/:listingId" element={<ApplicationsPage />} />
     </Routes>
   );
 }

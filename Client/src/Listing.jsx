@@ -10,21 +10,37 @@ const Listings = () => {
     const navigate = useNavigate();
     const token = sessionStorage.getItem('token');
     useEffect(() => {
-
         const fetchListings = async () => {
+            const role = sessionStorage.getItem('role');
             if (!token) navigate('/login');
             console.log(token)
             try {
                 toast.loading();
-                const response = await axios({
-                    method: 'GET',
-                    url: 'http://localhost:8080/api/v1/listing/all-listings',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                let response;
+                if (role === 'USER') {
+                    response = await axios({
+                        method: 'GET',
+                        url: 'http://localhost:8080/api/v1/listing/all-listings',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                } else {
+                    response = await axios({
+                        method: 'GET',
+                        url: 'http://localhost:8080/api/v1/listing/my-detail',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                }
                 console.log(response);
-                setListings(response?.data)
+                if (sessionStorage.getItem('role') === 'USER') {
+                    setListings(response?.data)
+                }
+                else {
+                    setListings(response?.data?.listingDTOS)
+                }
                 toast.dismiss();
             } catch (error) {
                 console.error(error);
@@ -32,6 +48,7 @@ const Listings = () => {
         };
         fetchListings();
     }, []);
+
 
 
     const handleApply = (listingId) => { // Accept listingId as parameter
@@ -73,7 +90,9 @@ const Listings = () => {
         finally {
             setModalOpen(false);
         }
-
+    };
+    const handleViewApplications = async (listingId) => {
+        navigate(`/applications/${listingId}`)
     };
 
     return (
@@ -101,13 +120,18 @@ const Listings = () => {
                     </div>
                     <p className="font-bold uppercase tracking-wider">Salary: <i>{listing.salary}</i></p>
                     <div className='flex lg:justify-start justify-center'>
-                        <button onClick={() => handleApply(listing.id)} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4 uppercase tracking-wider">Apply</button>
+                        {sessionStorage.getItem('role') === 'USER' ? (
+                            <button onClick={() => handleApply(listing.id)} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4 uppercase tracking-wider">Apply</button>
+                        ) : (
+                            <button onClick={() => handleViewApplications(listing.id)} className="bg-green-500 text-white px-4 py-2 rounded-md mt-4 uppercase tracking-wider">View Applicants</button>
+                        )}
                     </div>
                 </div>
             ))}
             <UploadModal isOpen={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} />
         </div>
     );
+
 }
 
 export default Listings;
