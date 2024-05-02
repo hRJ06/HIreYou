@@ -30,4 +30,6 @@ public class Organization {
     @JsonIgnore
     @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
     private List<Listing> listingList;
+    @OneToMany(mappedBy = "organization", cascade = CascadeType.ALL)
+    private List<Review> reviewList;
 }

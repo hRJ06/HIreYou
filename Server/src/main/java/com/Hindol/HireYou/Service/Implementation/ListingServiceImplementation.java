@@ -175,6 +175,7 @@ public class ListingServiceImplementation implements ListingService {
         try {
             List<Listing> listingList = this.listingRepository.findAll();
             List<ListingDTO> listingDTOS = listingList.stream().map(listing -> this.modelMapper.map(listing,ListingDTO.class)).collect(Collectors.toList());
+
             return listingDTOS;
         }
         catch (Exception e) {

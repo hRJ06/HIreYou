@@ -58,41 +58,42 @@ const ApplicationsPage = () => {
             fetchApplications();
         } catch (error) {
             console.error('Error updating application status:', error);
-        } finally {
         }
     };
-
 
     return (
         <div className="container mx-auto py-8 font-ubuntu">
             <h1 className="text-3xl font-bold mb-4 text-gray-800 text-center uppercase first-letter:text-4xl tracking-[1.2px]">Applications</h1>
-            <div className="grid grid-cols-1 gap-4">
-                {applications.map(application => (
-                    <div key={application.id} className="border p-4 bg-gray-100 rounded-md">
-                        <h2 className="text-xl font-bold uppercase tracking-wider">{application.user.firstName} {application.user.lastName}</h2>
-                        <p className="text-sm text-gray-600 tracking-wider">Name - {application.user.firstName} {application.user.lastName}</p>
-                        <p className="text-sm text-gray-600 tracking-wider">Email - {application.user.email}</p>
-                        <p className="text-sm text-gray-600 tracking-wider">Status: {application.status}</p>
-                        <a href={application.application} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline uppercase tracking-wider">View Application</a>
-                        <div className="mt-2">
-                            {application.status === 'DUE' ? (
-                                <>
-                                    <button onClick={() => handleUpdateStatus(application.id, 'ACCEPTED')} className="bg-green-500 text-white px-4 py-2 rounded-md uppercase tracking-wider mr-2">Accept</button>
-                                    <button onClick={() => handleUpdateStatus(application.id, 'REJECTED')} className="bg-red-500 text-white px-4 py-2 rounded-md uppercase tracking-wider">Reject</button>
-                                </>
-                            ) : (
-                                <>
-                                    <button disabled className="bg-gray-300 text-gray-500 cursor-not-allowed px-4 py-2 rounded-md uppercase tracking-wider mr-2">Accept</button>
-                                    <button disabled className="bg-gray-300 text-gray-500 cursor-not-allowed px-4 py-2 rounded-md uppercase tracking-wider">Reject</button>
-                                </>
-                            )}
+            {applications.length === 0 ? (
+                <p className="text-center text-gray-600 uppercase tracking-wider underline underline-offset-2">No applications yet.</p>
+            ) : (
+                <div className="grid grid-cols-1 gap-4">
+                    {applications.map(application => (
+                        <div key={application.id} className="border p-4 bg-gray-100 rounded-md">
+                            <h2 className="text-xl font-bold uppercase tracking-wider">{application.user.firstName} {application.user.lastName}</h2>
+                            <p className="text-sm text-gray-600 tracking-wider">Name - {application.user.firstName} {application.user.lastName}</p>
+                            <p className="text-sm text-gray-600 tracking-wider">Email - {application.user.email}</p>
+                            <p className="text-sm text-gray-600 tracking-wider">Status: {application.status}</p>
+                            <a href={application.application} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline uppercase tracking-wider">View Application</a>
+                            <div className="mt-2">
+                                {application.status === 'DUE' ? (
+                                    <>
+                                        <button onClick={() => handleUpdateStatus(application.id, 'ACCEPTED')} className="bg-green-500 text-white px-4 py-2 rounded-md uppercase tracking-wider mr-2">Accept</button>
+                                        <button onClick={() => handleUpdateStatus(application.id, 'REJECTED')} className="bg-red-500 text-white px-4 py-2 rounded-md uppercase tracking-wider">Reject</button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button disabled className="bg-gray-300 text-gray-500 cursor-not-allowed px-4 py-2 rounded-md uppercase tracking-wider mr-2">Accept</button>
+                                        <button disabled className="bg-gray-300 text-gray-500 cursor-not-allowed px-4 py-2 rounded-md uppercase tracking-wider">Reject</button>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
-
-    )
+    );
 };
 
 export default ApplicationsPage;

@@ -127,7 +127,7 @@ const Listings = () => {
             <h1 className="text-3xl font-bold mb-4 text-gray-800 text-center uppercase first-letter:text-4xl tracking-[1.2px]">Job Listings</h1>
             {listings.map((listing, index) => (
                 <div key={index} className="border p-4 mb-4 bg-gray-100 rounded-md">
-                    <h2 className="text-xl font-bold uppercase tracking-wider">{listing.position}</h2>
+                    <h2 className="text-xl font-bold uppercase tracking-wider">{listing.position} <span className='text-sm text-gray-500 font-normal underline underline-offset-2 cursor-pointer' onClick={() => navigate(`/organization/${listing?.organization?.id}`)}>{listing?.organization?.name}</span></h2>
                     <p className="text-gray-600 mb-4"><span className="font-bold uppercase tracking-wider">About -</span> <i>{listing.about}</i></p>
                     <div className="mb-4">
                         <p className="font-bold uppercase tracking-wider">Roles & Responsibilities</p>
@@ -155,13 +155,16 @@ const Listings = () => {
                     </div>
                 </div>
             ))}
-            {!sessionStorage.getItem('role') !== 'USER' && (
+            {sessionStorage.getItem('role') !== 'USER' && (
                 <div className='flex justify-end'>
                     <button onClick={handleOpenNewListingModal} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4 uppercase tracking-wider">+</button>
                 </div>
             )}
             <UploadModal isOpen={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} />
-            <AddListingModal isOpen={modalOpen} onClose={handleCloseNewListingModal} onSubmit={handleAddNewListing} />
+            {
+                sessionStorage.getItem('role') !== 'USER' &&
+                <AddListingModal isOpen={modalOpen} onClose={handleCloseNewListingModal} onSubmit={handleAddNewListing} />
+            }
         </div>
     );
 

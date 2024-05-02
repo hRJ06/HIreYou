@@ -1,5 +1,6 @@
 package com.Hindol.HireYou.Payload;
 
+import com.Hindol.HireYou.Entity.Organization;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,4 +19,5 @@ public class ListingDTO {
     private List<String> rolesResponsibility;
     private List<String> skills;
     private String salary;
+    private Organization organization;
 }

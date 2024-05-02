@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class ApplicationController {
     @Autowired
     private ApplicationService applicationService;
-    @GetMapping("/update/{applicationId}")
+    @PutMapping("/update/{applicationId}")
     public ResponseEntity<ResponseDTO> updateStatus(@RequestParam("status") Integer statusCode,@PathVariable Integer applicationId, HttpServletRequest request) {
         String email = (String) request.getAttribute("Email");
         String role = (String) request.getAttribute("Role");

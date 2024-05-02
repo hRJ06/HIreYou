@@ -2,15 +2,16 @@ package com.Hindol.HireYou.Service.Implementation;
 
 import com.Hindol.HireYou.Entity.Enum.Role;
 import com.Hindol.HireYou.Entity.Organization;
+import com.Hindol.HireYou.Entity.Review;
 import com.Hindol.HireYou.Entity.User;
-import com.Hindol.HireYou.Payload.LoginResponseDTO;
-import com.Hindol.HireYou.Payload.OrganizationDTO;
-import com.Hindol.HireYou.Payload.TokenValidationResultDTO;
-import com.Hindol.HireYou.Payload.UserDTO;
+import com.Hindol.HireYou.Payload.*;
 import com.Hindol.HireYou.Repository.OrganizationRepository;
+import com.Hindol.HireYou.Repository.ReviewRepository;
+import com.Hindol.HireYou.Repository.UserRepository;
 import com.Hindol.HireYou.Service.OrganizationService;
 import com.Hindol.HireYou.Util.JWTToken;
 import com.cloudinary.Cloudinary;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,10 @@ import java.util.Map;
 public class OrganizationServiceImplementation implements OrganizationService {
     @Autowired
     private OrganizationRepository organizationRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ReviewRepository reviewRepository;
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Autowired
@@ -96,15 +101,14 @@ public class OrganizationServiceImplementation implements OrganizationService {
     }
 
     @Override
-    public OrganizationDTO getDetails(String token) {
+    public OrganizationDTO getDetails(String token,Integer organizationId) {
         try {
             TokenValidationResultDTO tokenValidationResultDTO = this.jwtToken.verifyToken(token);
             if("Expired Token".equals(tokenValidationResultDTO.getResult()) || "Invalid Token".equals(tokenValidationResultDTO.getResult())) {
                 return null;
             }
             else {
-                String email = tokenValidationResultDTO.getEmail();
-                Organization organization = this.organizationRepository.findByEmail(email);
+                Organization organization = this.organizationRepository.findById(organizationId).orElseThrow(() -> new RuntimeException("Unable to find Organization with ID " + organizationId));
                 if(organization != null) {
                     OrganizationDTO organizationDTO = this.modelMapper.map(organization, OrganizationDTO.class);
                     /* SECURITY PURPOSE */
@@ -121,5 +125,46 @@ public class OrganizationServiceImplementation implements OrganizationService {
             log.error(e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public ResponseDTO addReview(String token, Integer organizationId, ReviewDTO reviewDTO) {
+        try {
+            TokenValidationResultDTO tokenValidationResultDTO = this.jwtToken.verifyToken(token);
+            if("Expired Token".equals(tokenValidationResultDTO.getResult()) || "Invalid Token".equals(tokenValidationResultDTO.getResult())) {
+                return new ResponseDTO("Expired Token or Invalid Token",false);
+            }
+            else {
+                Organization organization = this.organizationRepository.findById(organizationId).orElseThrow(() -> new RuntimeException("Unable to find Organization with ID " + organizationId));
+                Review review = this.modelMapper.map(reviewDTO,Review.class);
+                if(tokenValidationResultDTO.getRole().equals("USER")) {
+                    User user = this.userRepository.findByEmail(tokenValidationResultDTO.getEmail());
+                    if(user != null) {
+                        review.setUser(user);
+                        review.setOrganization(organization);
+                        transactionSave(review,organization);
+                        return new ResponseDTO("Successfully added Review.",true);
+                    }
+                    else {
+                        return new ResponseDTO("You are not registered with us.",false);
+                    }
+                }
+                else {
+                    return new ResponseDTO("You are not authorized",false);
+                }
+            }
+
+
+        }
+        catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseDTO("Please Try Again",false);
+        }
+    }
+    @Transactional
+    private void transactionSave(Review review,Organization organization) {
+        Review savedReview = this.reviewRepository.save(review);
+        organization.getReviewList().add(savedReview);
+        this.organizationRepository.save(organization);
     }
 }

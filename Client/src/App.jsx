@@ -7,6 +7,7 @@ import SignUp from "./SignUp";
 import Listings from "./Listing";
 import YourApplications from "./YourApplications";
 import ApplicationsPage from "./Applications";
+import Organization from "./Organization";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Route path="/about-us" element={<AboutUs />}></Route>
       <Route path='/applications' element={<YourApplications />}></Route>
       <Route path="/applications/:listingId" element={<ApplicationsPage />} />
+      <Route path="/organization/:organizationId" element={<Organization/>} />
     </Routes>
   );
 }
