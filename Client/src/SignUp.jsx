@@ -69,7 +69,7 @@ const SignUp = () => {
             reader.onloadend = () => {
                 setOrganizationFormData({
                     ...organizationFormData,
-                    imgae: file,
+                    image: file,
                     file: reader.result,
                 });
             };
@@ -79,15 +79,17 @@ const SignUp = () => {
 
     const handleSignUp = async () => {
         try {
+            console.log(organizationFormData)
             toast.loading();
             const endpoint = tab === 'user' ? 'user' : 'organization';
             const formData = new FormData();
-            Object.keys(userFormData).forEach(key => {
+            const formDataToUse = tab === 'user' ? userFormData : organizationFormData;
+            Object.keys(formDataToUse).forEach(key => {
                 if (key !== 'image') {
-                    formData.append(key, userFormData[key]);
+                    formData.append(key, formDataToUse[key]);
                 }
             });
-            formData.append('file', userFormData.image);
+            formData.append('file', formDataToUse.image);
             const response = await axios.post(`http://localhost:8080/api/v1/${endpoint}/register`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -106,6 +108,7 @@ const SignUp = () => {
             toast.error("Please Try Again");
         }
     };
+
 
 
     return (
