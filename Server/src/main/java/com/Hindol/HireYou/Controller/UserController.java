@@ -19,7 +19,7 @@ public class UserController {
     @Autowired
     private UserService userService;
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestParam("file")MultipartFile file,@RequestParam("firstName") String firstName,@RequestParam("lastName") String lastName,@RequestParam("email") String email,@RequestParam("password") String password,@RequestParam("collegeName") String collegeName,@RequestParam("address") String address) {
+    public ResponseEntity<UserDTO> registerUser(@RequestParam("file") MultipartFile file,@RequestParam("firstName") String firstName,@RequestParam("lastName") String lastName,@RequestParam("email") String email,@RequestParam("password") String password,@RequestParam("collegeName") String collegeName,@RequestParam("address") String address) {
         UserDTO requestDTO = new UserDTO();
         requestDTO.setFirstName(firstName);
         requestDTO.setLastName(lastName);

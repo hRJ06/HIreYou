@@ -1,7 +1,10 @@
-// SignUp.js
 import React, { useState } from 'react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
+    const navigate = useNavigate();
     const [tab, setTab] = useState('user');
     const [userFormData, setUserFormData] = useState({
         firstName: '',
@@ -10,6 +13,7 @@ const SignUp = () => {
         password: '',
         collegeName: '',
         address: '',
+        file: null,
         image: null,
     });
 
@@ -19,6 +23,7 @@ const SignUp = () => {
         password: '',
         website: '',
         location: '',
+        file: null,
         image: null,
     });
 
@@ -49,7 +54,8 @@ const SignUp = () => {
             reader.onloadend = () => {
                 setUserFormData({
                     ...userFormData,
-                    image: reader.result,
+                    image: file,
+                    file: reader.result,
                 });
             };
             reader.readAsDataURL(file);
@@ -63,17 +69,44 @@ const SignUp = () => {
             reader.onloadend = () => {
                 setOrganizationFormData({
                     ...organizationFormData,
-                    image: reader.result,
+                    imgae: file,
+                    file: reader.result,
                 });
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const handleSignUp = () => {
-        // Handle sign-up logic here
-        console.log('Signing up...');
+    const handleSignUp = async () => {
+        try {
+            toast.loading();
+            const endpoint = tab === 'user' ? 'user' : 'organization';
+            const formData = new FormData();
+            Object.keys(userFormData).forEach(key => {
+                if (key !== 'image') {
+                    formData.append(key, userFormData[key]);
+                }
+            });
+            formData.append('file', userFormData.image);
+            const response = await axios.post(`http://localhost:8080/api/v1/${endpoint}/register`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            toast.dismiss();
+            if (response.status === 200) {
+                toast.success("Registered Successfully");
+                navigate('/login');
+            } else {
+                toast.error("Please Try Again");
+            }
+        } catch (error) {
+            toast.dismiss();
+            console.error(error);
+            toast.error("Please Try Again");
+        }
     };
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 font-ubuntu">
@@ -96,13 +129,22 @@ const SignUp = () => {
                 </div>
                 {tab === 'user' && (
                     <form>
-                        <label className="block mb-2 uppercase tracking-[1.2px]">Name</label>
+                        <label className="block mb-2 uppercase tracking-[1.2px]">First Name</label>
                         <input
                             type="text"
-                            name="name"
+                            name="firstName"
                             placeholder="First Name"
                             className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
-                            value={organizationFormData.name}
+                            value={userFormData.firstName}
+                            onChange={handleUserFormChange}
+                        />
+                        <label className="block mb-2 uppercase tracking-[1.2px]">Last Name</label>
+                        <input
+                            type="text"
+                            name="lastName"
+                            placeholder="Last Name"
+                            className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
+                            value={userFormData.lastName}
                             onChange={handleUserFormChange}
                         />
                         <label className="block mb-2 uppercase tracking-[1.2px]">Email</label>
@@ -111,7 +153,7 @@ const SignUp = () => {
                             name="email"
                             placeholder="Email"
                             className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
-                            value={organizationFormData.email}
+                            value={userFormData.email}
                             onChange={handleUserFormChange}
                         />
                         <label className="block mb-2 uppercase tracking-[1.2px]">Password</label>
@@ -120,7 +162,7 @@ const SignUp = () => {
                             name="password"
                             placeholder="Password"
                             className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
-                            value={organizationFormData.password}
+                            value={userFormData.password}
                             onChange={handleUserFormChange}
                         />
                         <label className="block mb-2 uppercase tracking-[1.2px]">College</label>
@@ -149,9 +191,9 @@ const SignUp = () => {
                                 className="w-20 h-20 bg-gray-200 rounded-full overflow-hidden border border-gray-400 cursor-pointer"
                                 onClick={() => document.getElementById('imageInputUser').click()}
                             >
-                                {userFormData.image && (
+                                {userFormData.file && (
                                     <img
-                                        src={userFormData.image}
+                                        src={userFormData.file}
                                         alt="User"
                                         className="object-cover w-full h-full"
                                     />
@@ -179,85 +221,85 @@ const SignUp = () => {
                 {tab === 'organization' && (
                     <form>
                         <form>
-                        <label className="block mb-2 uppercase tracking-[1.2px]">First Name</label>
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder="First Name"
-                            className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
-                            value={organizationFormData.name}
-                            onChange={handleOrganizationFormChange}
-                        />
-                        <label className="block mb-2 uppercase tracking-[1.2px]">Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="Email"
-                            className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
-                            value={organizationFormData.email}
-                            onChange={handleOrganizationFormChange}
-                        />
-                        <label className="block mb-2 uppercase tracking-[1.2px]">Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="Password"
-                            className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
-                            value={organizationFormData.password}
-                            onChange={handleOrganizationFormChange}
-                        />
-                        <label className="block mb-2 uppercase tracking-[1.2px]">Website</label>
-                        <input
-                            type="text"
-                            name="website"
-                            placeholder="Website"
-                            className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
-                            value={organizationFormData.website}
-                            onChange={handleOrganizationFormChange}
-                        />
-                        <label className="block mb-2 uppercase tracking-[1.2px]">Location</label>
-                        <textarea
-                            rows={5}
-                            cols={8}
-                            name="location"
-                            placeholder="Location"
-                            className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
-                            value={organizationFormData.location}
-                            onChange={handleOrganizationFormChange}
-                        />
-                        {/* Add other user fields similarly */}
-                        <div className="mb-2 flex flex-col justify-center items-center">
-                            <label className="block mb-2 uppercase tracking-[1.2px]">Image</label>
-                            <div
-                                className="w-20 h-20 bg-gray-200 rounded-full overflow-hidden border border-gray-400 cursor-pointer"
-                                onClick={() => document.getElementById('imageInputOrganization').click()}
-                            >
-                                {organizationFormData.image && (
-                                    <img
-                                        src={organizationFormData.image}
-                                        alt="Organization"
-                                        className="object-cover w-full h-full"
-                                    />
-                                )}
-                            </div>
+                            <label className="block mb-2 uppercase tracking-[1.2px]">Name</label>
                             <input
-                                id="imageInputOrganization"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleOrganizationProfilePictureChange}
+                                type="text"
+                                name="name"
+                                placeholder="Name"
+                                className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
+                                value={organizationFormData.name}
+                                onChange={handleOrganizationFormChange}
                             />
-                        </div>
-                        <div className='flex justify-center'>
-                            <button
-                                type="button"
-                                className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none focus:ring focus:border-green-500 uppercase tracking-[1.2px]"
-                                onClick={handleSignUp}
-                            >
-                                Sign Up
-                            </button>
-                        </div>
-                    </form>
+                            <label className="block mb-2 uppercase tracking-[1.2px]">Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="Email"
+                                className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
+                                value={organizationFormData.email}
+                                onChange={handleOrganizationFormChange}
+                            />
+                            <label className="block mb-2 uppercase tracking-[1.2px]">Password</label>
+                            <input
+                                type="password"
+                                name="password"
+                                placeholder="Password"
+                                className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
+                                value={organizationFormData.password}
+                                onChange={handleOrganizationFormChange}
+                            />
+                            <label className="block mb-2 uppercase tracking-[1.2px]">Website</label>
+                            <input
+                                type="text"
+                                name="website"
+                                placeholder="Website"
+                                className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
+                                value={organizationFormData.website}
+                                onChange={handleOrganizationFormChange}
+                            />
+                            <label className="block mb-2 uppercase tracking-[1.2px]">Location</label>
+                            <textarea
+                                rows={5}
+                                cols={8}
+                                name="location"
+                                placeholder="Location"
+                                className="w-full mb-2 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-green-500 placeholder:text-sm placeholder:uppercase placeholder:tracking-[1.2px]"
+                                value={organizationFormData.location}
+                                onChange={handleOrganizationFormChange}
+                            />
+                            {/* Add other user fields similarly */}
+                            <div className="mb-2 flex flex-col justify-center items-center">
+                                <label className="block mb-2 uppercase tracking-[1.2px]">Image</label>
+                                <div
+                                    className="w-20 h-20 bg-gray-200 rounded-full overflow-hidden border border-gray-400 cursor-pointer"
+                                    onClick={() => document.getElementById('imageInputOrganization').click()}
+                                >
+                                    {organizationFormData.file && (
+                                        <img
+                                            src={organizationFormData.file}
+                                            alt="Organization"
+                                            className="object-cover w-full h-full"
+                                        />
+                                    )}
+                                </div>
+                                <input
+                                    id="imageInputOrganization"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={handleOrganizationProfilePictureChange}
+                                />
+                            </div>
+                            <div className='flex justify-center'>
+                                <button
+                                    type="button"
+                                    className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 focus:outline-none focus:ring focus:border-green-500 uppercase tracking-[1.2px]"
+                                    onClick={handleSignUp}
+                                >
+                                    Sign Up
+                                </button>
+                            </div>
+                        </form>
                     </form>
                 )}
             </div>

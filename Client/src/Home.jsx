@@ -70,11 +70,12 @@ const Home = () => {
                                 {/* Render Login link */}
                                 <a href="/login" className="hover:text-gray-400 hover:underline">Login</a>
                             </li>
+                            
                         )}
                         <li>
                             {/* Render Signup or Listings link */}
                             {
-                                sessionStorage.getItem('role') === 'USER' && <a href={sessionStorage.getItem('token') ? "/listings" : "/sign-up"} className="hover:text-gray-400 hover:underline tracking-[1.1px]">
+                                <a href={sessionStorage.getItem('token') ? "/listings" : "/sign-up"} className="hover:text-gray-400 hover:underline tracking-[1.1px]">
                                     {sessionStorage.getItem('token') ? "Explore" : "Sign up"}
                                 </a>
                             }
