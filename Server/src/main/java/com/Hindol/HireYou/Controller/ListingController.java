@@ -99,4 +99,14 @@ public class ListingController {
         return new ResponseEntity<ResponseDTO>(responseDTO,
                 responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
+
+    @PutMapping("/update-status/{listingId}/{status}")
+    public ResponseEntity<ResponseDTO> updateStatus(HttpServletRequest request, @PathVariable Integer listingId,
+            @PathVariable Integer status) {
+        String email = (String) request.getAttribute("Email");
+        String role = (String) request.getAttribute("Role");
+        ResponseDTO responseDTO = this.listingService.updateStatus(listingId, email, role, status != 0 ? true : false);
+        return new ResponseEntity<ResponseDTO>(responseDTO,
+                responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
 }

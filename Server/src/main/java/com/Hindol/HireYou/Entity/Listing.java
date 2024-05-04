@@ -35,4 +35,5 @@ public class Listing {
     private List<Application> applicationList;
     @CreationTimestamp
     private Date createdAt;
+    private Boolean acceptApplication = true;
 }

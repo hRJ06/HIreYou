@@ -129,6 +129,9 @@ public class ListingServiceImplementation implements ListingService {
                 if (user != null) {
                     Listing listing = this.listingRepository.findById(listingId)
                             .orElseThrow(() -> new ResourceNotFoundException("Listing", "Id", listingId));
+                    if (!listing.getAcceptApplication()) {
+                        return new ResponseDTO("This Listing is no longer accepting application.", true);
+                    }
                     Map data = this.cloudinary.uploader().upload(file.getBytes(), Map.of());
                     String uploadedLink = (String) data.get("secure_url");
                     /* CREATE AN APPLICATION */
@@ -147,6 +150,35 @@ public class ListingServiceImplementation implements ListingService {
             throw e;
         } catch (Exception e) {
             log.error("An error occurred while adding application - ", e);
+            return new ResponseDTO("Please Try Again", false);
+        }
+    }
+
+    @Override
+    public ResponseDTO updateStatus(Integer ListingId, String email, String role, Boolean status) {
+        try {
+            if (role.equals("USER")) {
+                return new ResponseDTO("You are not authorized", false);
+            }
+            Organization organization = this.organizationRepository.findByEmail(email);
+            if (organization != null) {
+                Listing listing = this.listingRepository.findById(ListingId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Listing", "Id", ListingId));
+                if (listing.getOrganization().equals(organization)) {
+                    listing.setAcceptApplication(status);
+                    this.listingRepository.save(listing);
+                    return new ResponseDTO("Successfully Updated Listing status.", true);
+                } else {
+                    return new ResponseDTO("You are not authorized.", false);
+                }
+
+            } else {
+                return new ResponseDTO("You are not registered as a Organization.", false);
+            }
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("An error occurred while updating Listing status - ", e);
             return new ResponseDTO("Please Try Again", false);
         }
     }
@@ -217,8 +249,13 @@ public class ListingServiceImplementation implements ListingService {
                 if (organization != null) {
                     Listing listing = this.listingRepository.findById(ListingId)
                             .orElseThrow(() -> new ResourceNotFoundException("Listing", "ID", ListingId));
-                    updateListing(listing, listingDTO);
-                    return new ResponseDTO("Successfully Updated Listing", true);
+                    if (listing.getOrganization().equals(organization)) {
+                        updateListing(listing, listingDTO);
+                        return new ResponseDTO("Successfully Updated Listing", true);
+                    } else {
+                        return new ResponseDTO("You are not authorized.", false);
+                    }
+
                 } else {
                     return new ResponseDTO("You are not registered with us.", false);
                 }
@@ -339,53 +376,55 @@ public class ListingServiceImplementation implements ListingService {
             javaMailSender.send(mimeMessage);
         }
         /* ORGANIZATION */
-        String subject = "Listing Updated";
-        String content = "<html>" +
-                "<head>" +
-                "<style>" +
-                "body {" +
-                "font-family: Arial, sans-serif;" +
-                "margin: 0;" +
-                "padding: 0;" +
-                "background-color: #f4f4f4;" +
-                "}" +
-                ".container {" +
-                "max-width: 600px;" +
-                "margin: 20px auto;" +
-                "padding: 20px;" +
-                "background-color: #fff;" +
-                "border-radius: 8px;" +
-                "box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);" +
-                "}" +
-                "h1 {" +
-                "color: #333;" +
-                "}" +
-                "p {" +
-                "color: #666;" +
-                "}" +
-                "</style>" +
-                "</head>" +
-                "<body>" +
-                "<div class='container'>" +
-                "<h1>Listing Successfully Updated</h1>" +
-                "<p>Dear  " + listing.getOrganization().getName() + ",</p>" +
-                "<p>We are pleased to inform you that your listing for " + listing.getPosition()
-                + " has been successfully updated. All changes have been applied and the status of all applications has been updated accordingly.</p>"
-                +
-                "<p>Please feel free to review the updated listing and the current status of applications at your convenience.</p>"
-                +
-                "<p>Thank you for using our platform.</p>" +
-                "<p>Sincerely,</p>" +
-                "<p>HireYou Team</p>" +
-                "</div>" +
-                "</body>" +
-                "</html>";
-        helper.setFrom(sender);
-        helper.setTo(listing.getOrganization().getEmail());
-        helper.setText(content, true);
-        helper.setSubject(subject);
-        javaMailSender.send(mimeMessage);
-        this.listingRepository.save(listing);
+        if (listing.getApplicationList().size() > 0) {
+            String subject = "Listing Updated";
+            String content = "<html>" +
+                    "<head>" +
+                    "<style>" +
+                    "body {" +
+                    "font-family: Arial, sans-serif;" +
+                    "margin: 0;" +
+                    "padding: 0;" +
+                    "background-color: #f4f4f4;" +
+                    "}" +
+                    ".container {" +
+                    "max-width: 600px;" +
+                    "margin: 20px auto;" +
+                    "padding: 20px;" +
+                    "background-color: #fff;" +
+                    "border-radius: 8px;" +
+                    "box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);" +
+                    "}" +
+                    "h1 {" +
+                    "color: #333;" +
+                    "}" +
+                    "p {" +
+                    "color: #666;" +
+                    "}" +
+                    "</style>" +
+                    "</head>" +
+                    "<body>" +
+                    "<div class='container'>" +
+                    "<h1>Listing Successfully Updated</h1>" +
+                    "<p>Dear  " + listing.getOrganization().getName() + ",</p>" +
+                    "<p>We are pleased to inform you that your listing for " + listing.getPosition()
+                    + " has been successfully updated. All changes have been applied and the status of all applications has been updated accordingly.</p>"
+                    +
+                    "<p>Please feel free to review the updated listing and the current status of applications at your convenience.</p>"
+                    +
+                    "<p>Thank you for using our platform.</p>" +
+                    "<p>Sincerely,</p>" +
+                    "<p>HireYou Team</p>" +
+                    "</div>" +
+                    "</body>" +
+                    "</html>";
+            helper.setFrom(sender);
+            helper.setTo(listing.getOrganization().getEmail());
+            helper.setText(content, true);
+            helper.setSubject(subject);
+            javaMailSender.send(mimeMessage);
+            this.listingRepository.save(listing);
+        }
     }
 
     @Transactional

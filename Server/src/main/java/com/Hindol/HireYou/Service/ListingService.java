@@ -10,12 +10,22 @@ import java.util.List;
 
 public interface ListingService {
     ResponseDTO addListing(String email, String role, ListingDTO listingDTO);
+
     ListingDTO getDetails(Integer listingId);
+
     OrganizationListingDTO getAllListingDetails(String email, String Role);
-    ResponseDTO addApplication(Integer listingId, MultipartFile file,String email,String role);
-    ListingApplicationDTO getApplicationForListing(String email,String role,Integer listingId);
+
+    ResponseDTO addApplication(Integer listingId, MultipartFile file, String email, String role);
+
+    ListingApplicationDTO getApplicationForListing(String email, String role, Integer listingId);
+
     List<ListingDTO> getAllListings();
+
     List<ListingDTO> searchListing(String keyword);
-    ResponseDTO deleteListing(Integer listingId,String email,String role);
-    ResponseDTO updateListing(Integer ListingId, String email,String role, ListingDTO listingDTO);
+
+    ResponseDTO deleteListing(Integer listingId, String email, String role);
+
+    ResponseDTO updateListing(Integer ListingId, String email, String role, ListingDTO listingDTO);
+
+    ResponseDTO updateStatus(Integer ListingId, String email, String role, Boolean status);
 }
