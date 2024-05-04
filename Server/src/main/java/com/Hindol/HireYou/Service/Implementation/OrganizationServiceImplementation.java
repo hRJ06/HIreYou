@@ -4,6 +4,7 @@ import com.Hindol.HireYou.Entity.Enum.Role;
 import com.Hindol.HireYou.Entity.Organization;
 import com.Hindol.HireYou.Entity.Review;
 import com.Hindol.HireYou.Entity.User;
+import com.Hindol.HireYou.Exception.ResourceNotFoundException;
 import com.Hindol.HireYou.Payload.*;
 import com.Hindol.HireYou.Repository.OrganizationRepository;
 import com.Hindol.HireYou.Repository.ReviewRepository;
@@ -108,7 +109,7 @@ public class OrganizationServiceImplementation implements OrganizationService {
                 return null;
             }
             else {
-                Organization organization = this.organizationRepository.findById(organizationId).orElseThrow(() -> new RuntimeException("Unable to find Organization with ID " + organizationId));
+                Organization organization = this.organizationRepository.findById(organizationId).orElseThrow(() -> new ResourceNotFoundException("Organization", "Id", organizationId));
                 if(organization != null) {
                     OrganizationDTO organizationDTO = this.modelMapper.map(organization, OrganizationDTO.class);
                     /* SECURITY PURPOSE */
@@ -120,6 +121,9 @@ public class OrganizationServiceImplementation implements OrganizationService {
                 }
 
             }
+        }
+        catch (ResourceNotFoundException e) {
+            throw e;
         }
         catch (Exception e) {
             log.error(e.getMessage());
@@ -135,7 +139,7 @@ public class OrganizationServiceImplementation implements OrganizationService {
                 return new ResponseDTO("Expired Token or Invalid Token",false);
             }
             else {
-                Organization organization = this.organizationRepository.findById(organizationId).orElseThrow(() -> new RuntimeException("Unable to find Organization with ID " + organizationId));
+                Organization organization = this.organizationRepository.findById(organizationId).orElseThrow(() -> new ResourceNotFoundException("Organization", "Id", organizationId));
                 Review review = this.modelMapper.map(reviewDTO,Review.class);
                 if(tokenValidationResultDTO.getRole().equals("USER")) {
                     User user = this.userRepository.findByEmail(tokenValidationResultDTO.getEmail());
@@ -153,8 +157,9 @@ public class OrganizationServiceImplementation implements OrganizationService {
                     return new ResponseDTO("You are not authorized",false);
                 }
             }
-
-
+        }
+        catch (ResourceNotFoundException e) {
+            throw e;
         }
         catch (Exception e) {
             log.error(e.getMessage());

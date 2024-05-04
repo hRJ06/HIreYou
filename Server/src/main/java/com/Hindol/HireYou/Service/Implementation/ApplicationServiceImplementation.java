@@ -4,6 +4,7 @@ import com.Hindol.HireYou.Entity.Application;
 import com.Hindol.HireYou.Entity.Enum.Status;
 import com.Hindol.HireYou.Entity.Organization;
 import com.Hindol.HireYou.Entity.User;
+import com.Hindol.HireYou.Exception.ResourceNotFoundException;
 import com.Hindol.HireYou.Payload.ResponseDTO;
 import com.Hindol.HireYou.Payload.UserApplicationDTO;
 import com.Hindol.HireYou.Repository.ApplicationRepository;
@@ -47,7 +48,7 @@ public class ApplicationServiceImplementation implements ApplicationService {
                     return new ResponseDTO("Please provide a valid code.",false);
                 }
                 else {
-                    Application application = this.applicationRepository.findById(applicationId).orElseThrow(() -> new RuntimeException("Unable to find Application with ID " + applicationId));
+                    Application application = this.applicationRepository.findById(applicationId).orElseThrow(() -> new ResourceNotFoundException("Application", "Id", applicationId));
                     if(application.getStatus() != Status.DUE) {
                         return new ResponseDTO("You can't change Application Status now.",false);
                     }
@@ -58,6 +59,9 @@ public class ApplicationServiceImplementation implements ApplicationService {
             else {
                 return new ResponseDTO("You are not registered with us.", false);
             }
+        }
+        catch (ResourceNotFoundException e) {
+            throw e;
         }
         catch (Exception e) {
             log.error("An error occurred while updating application status - ", e);
@@ -77,7 +81,7 @@ public class ApplicationServiceImplementation implements ApplicationService {
                     return new UserApplicationDTO(true,"Successfully fetched all applications",applicationList);
                 }
                 else {
-                    return new UserApplicationDTO(false,"You are not registered with us.",List.of());
+                    return new UserApplicationDTO(false,"You are not registered with as an User.",List.of());
                 }
 
             }
@@ -97,7 +101,7 @@ public class ApplicationServiceImplementation implements ApplicationService {
             if(role.equals("USER")) {
                 User user = this.userRepository.findByEmail(email);
                 if(user != null) {
-                    Application application = this.applicationRepository.findById(applicationId).orElseThrow(() -> new RuntimeException("Unable to find Application with ID " + applicationId));
+                    Application application = this.applicationRepository.findById(applicationId).orElseThrow(() -> new ResourceNotFoundException("Application", "ID", applicationId));
                     if(application.getUser().equals(user)) {
                         if(application.getStatus() != Status.DUE) {
                             return new ResponseDTO("You are not allowed to withdraw now.",false);
@@ -119,6 +123,9 @@ public class ApplicationServiceImplementation implements ApplicationService {
                 return new ResponseDTO("You are not authorized.",false);
             }
 
+        }
+        catch (ResourceNotFoundException e) {
+            throw e;
         }
         catch (Exception e) {
             log.error("An error occurred while withdrawing application - ", e);

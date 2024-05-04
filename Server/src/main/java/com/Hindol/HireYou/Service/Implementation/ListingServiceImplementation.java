@@ -4,6 +4,7 @@ import com.Hindol.HireYou.Entity.Application;
 import com.Hindol.HireYou.Entity.Listing;
 import com.Hindol.HireYou.Entity.Organization;
 import com.Hindol.HireYou.Entity.User;
+import com.Hindol.HireYou.Exception.ResourceNotFoundException;
 import com.Hindol.HireYou.Payload.ListingApplicationDTO;
 import com.Hindol.HireYou.Payload.ListingDTO;
 import com.Hindol.HireYou.Payload.OrganizationListingDTO;
@@ -58,10 +59,10 @@ public class ListingServiceImplementation implements ListingService {
                     organization.getListingList().add(newListing);
                     /* TRANSACTION */
                     transactionalSave(newListing,organization);
-                    return new ResponseDTO("Successfully added the listing",true);
+                    return new ResponseDTO("Successfully added the listing.",true);
                 }
                 else {
-                    return new ResponseDTO("You are not authorized to add a listing.",false);
+                    return new ResponseDTO("You are not registered as an Organization..",false);
                 }
             }
         }
@@ -74,12 +75,15 @@ public class ListingServiceImplementation implements ListingService {
     @Override
     public ListingDTO getDetails(Integer listingId) {
         try {
-            Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("Unable to fetch Course with ID " +  listingId));
+            Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new ResourceNotFoundException("Listing", "Id", listingId));
             ListingDTO listingDTO = this.modelMapper.map(listing,ListingDTO.class);
             return listingDTO;
         }
+        catch (ResourceNotFoundException e) {
+            throw e;
+        }
         catch (Exception e) {
-            log.error("An error occured while fetching details -", e);
+            log.error("An error occurred while fetching details - ", e);
             return null;
         }
     }
@@ -103,7 +107,7 @@ public class ListingServiceImplementation implements ListingService {
             }
         }
         catch (Exception e) {
-            log.error("An error occured while fetching details -", e);
+            log.error("An error occurred while fetching details - ", e);
             return null;
         }
     }
@@ -118,7 +122,7 @@ public class ListingServiceImplementation implements ListingService {
                 /* APPLICANT */
                 User user = this.userRepository.findByEmail(email);
                 if(user != null) {
-                    Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("Unable to find Listing with ID " + listingId));
+                    Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new ResourceNotFoundException("Listing", "Id", listingId));
                     Map data = this.cloudinary.uploader().upload(file.getBytes(),Map.of());
                     String uploadedLink = (String) data.get("secure_url");
                     /* CREATE AN APPLICATION */
@@ -131,12 +135,15 @@ public class ListingServiceImplementation implements ListingService {
                     return new ResponseDTO("Successfully added Application",true);
                 }
                 else {
-                    return new ResponseDTO("You need to register first.",false);
+                    return new ResponseDTO("You are not registered as a User.",false);
                 }
             }
         }
+        catch (ResourceNotFoundException e) {
+            throw e;
+        }
         catch (Exception e) {
-            log.error("An error occured while adding application - ", e);
+            log.error("An error occurred while adding application - ", e);
             return new ResponseDTO("Please Try Again",false);
         }
     }
@@ -147,7 +154,7 @@ public class ListingServiceImplementation implements ListingService {
             if(role.equals("ORGANIZATION")) {
                 Organization organization = this.organizationRepository.findByEmail(email);
                 if(organization != null) {
-                    Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("Unable to find Listing with ID " + listingId));
+                    Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new ResourceNotFoundException("Listing", "Id", listingId));
                     if(listing.getOrganization().equals(organization)) {
                         List<Application> applicationList = listing.getApplicationList();
                         return new ListingApplicationDTO("Successfully fetched all Applications",true,applicationList);
@@ -164,8 +171,11 @@ public class ListingServiceImplementation implements ListingService {
                 return new ListingApplicationDTO("You are not authorized.",false,List.of());
             }
         }
+        catch (ResourceNotFoundException e) {
+            throw e;
+        }
         catch (Exception e) {
-            log.error("An error occured while fetching application - ", e);
+            log.error("An error occurred while fetching application - ", e);
             return new ListingApplicationDTO("Please Try Again",false,List.of());
         }
     }
