@@ -17,4 +17,5 @@ public interface ListingService {
     List<ListingDTO> getAllListings();
     List<ListingDTO> searchListing(String keyword);
     ResponseDTO deleteListing(Integer listingId,String email,String role);
+    ResponseDTO updateListing(Integer ListingId, String email,String role, ListingDTO listingDTO);
 }
