@@ -1,6 +1,7 @@
 package com.Hindol.HireYou.Service.Implementation;
 
 import com.Hindol.HireYou.Entity.Application;
+import com.Hindol.HireYou.Entity.Enum.Status;
 import com.Hindol.HireYou.Entity.Listing;
 import com.Hindol.HireYou.Entity.Organization;
 import com.Hindol.HireYou.Entity.User;
@@ -15,10 +16,15 @@ import com.Hindol.HireYou.Repository.OrganizationRepository;
 import com.Hindol.HireYou.Repository.UserRepository;
 import com.Hindol.HireYou.Service.ListingService;
 import com.cloudinary.Cloudinary;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,6 +47,9 @@ public class ListingServiceImplementation implements ListingService {
     private ModelMapper modelMapper;
     @Autowired
     private Cloudinary cloudinary;
+    @Autowired
+    private JavaMailSender javaMailSender;
+    @Value("${spring.mail.username}") private String sender;
     @Override
     public ResponseDTO addListing(String email, String role, ListingDTO listingDTO) {
         try {
@@ -189,8 +198,53 @@ public class ListingServiceImplementation implements ListingService {
             return listingDTOS;
         }
         catch (Exception e) {
-            log.error("An error occured while fetching listing - ", e);
+            log.error("An error occurred while fetching listing - ", e);
             return List.of();
+        }
+    }
+
+    @Override
+    public List<ListingDTO> searchListing(String keyword) {
+        try {
+            List<Listing> listingList = this.listingRepository.search(keyword);
+            List<ListingDTO> listingDTOS = listingList.stream().map(listing -> this.modelMapper.map(listing,ListingDTO.class)).collect(Collectors.toList());
+            return listingDTOS;
+        }
+        catch (Exception e) {
+            log.error("An error occurred while fetching listing - ", e);
+            return List.of();
+        }
+    }
+
+    @Override
+    public ResponseDTO deleteListing(Integer listingId, String email, String role) {
+        try {
+            if(role.equals("USER")) {
+                return new ResponseDTO("You are not authorized.",false);
+            }
+            else {
+                Organization organization = this.organizationRepository.findByEmail(email);
+                if(organization != null) {
+                    Listing listing = this.listingRepository.findById(listingId).orElseThrow(() -> new ResourceNotFoundException("Listing","ID",listingId));
+                    if(listing.getOrganization().equals(organization)) {
+                        deleteListing(listing);
+                        return new ResponseDTO("Successfully closed Listing.",true);
+                    }
+                    else {
+                        return new ResponseDTO("You are authorized.",false);
+                    }
+                }
+                else {
+                    return new ResponseDTO("You are not registered with us.",false);
+                }
+            }
+        }
+        catch (ResourceNotFoundException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            log.error("An error occurred while fetching listing - ", e);
+            return new ResponseDTO("Please Try Again",false);
         }
     }
 
@@ -207,5 +261,61 @@ public class ListingServiceImplementation implements ListingService {
         listing.getApplicationList().add(savedApplication);
         this.userRepository.save(user);
         this.listingRepository.save(listing);
+    }
+    @Transactional
+    private void deleteListing(Listing listing) throws MessagingException {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage,"utf-8");
+        for(Application application : listing.getApplicationList()) {
+            User appliedUser = application.getUser();
+            String subject = "Listing Closed";
+            String content = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "<head>\n" +
+                    "    <style>\n" +
+                    "        body {\n" +
+                    "            font-family: Arial, sans-serif;\n" +
+                    "            line-height: 1.6;\n" +
+                    "            color: #333;\n" +
+                    "        }\n" +
+                    "        .container {\n" +
+                    "            max-width: 600px;\n" +
+                    "            margin: 0 auto;\n" +
+                    "            padding: 20px;\n" +
+                    "            border: 1px solid #ddd;\n" +
+                    "            border-radius: 5px;\n" +
+                    "        }\n" +
+                    "        h1 {\n" +
+                    "            color: #333;\n" +
+                    "        }\n" +
+                    "        p {\n" +
+                    "            margin-bottom: 20px;\n" +
+                    "        }\n" +
+                    "        .signature {\n" +
+                    "            margin-top: 40px;\n" +
+                    "            font-style: italic;\n" +
+                    "        }\n" +
+                    "    </style>\n" +
+                    "    <title>Listing Closed</title>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "    <div class=\"container\">\n" +
+                    "        <h1>Listing Closed</h1>\n" +
+                    "        <p>Dear " + appliedUser.getFirstName() + " " + appliedUser.getLastName() + ",</p>\n" +
+                    "        <p>We regret to inform you that the listing for " + listing.getPosition() + " by " + listing.getOrganization().getName() + " you applied for has been closed. We appreciate your interest and the time you invested in applying for this position.</p>\n" +
+                    "        <p>Thank you for your patience throughout this process. Meanwhile, we encourage you to continue exploring other listings on our platform that match your interests and qualifications.</p>\n" +
+                    "        <p>Please disregard this email if you have already been informed of the closure and have accepted another opportunity.</p>\n" +
+                    "        <p>Thank you again for considering us. We wish you the best of luck in your job search.</p>\n" +
+                    "        <p class=\"signature\">Sincerely,<br>Your HireYou Team</p>\n" +
+                    "    </div>\n" +
+                    "</body>\n" +
+                    "</html>";
+            helper.setFrom(sender);
+            helper.setTo(appliedUser.getEmail());
+            helper.setText(content,true);
+            helper.setSubject(subject);
+            javaMailSender.send(mimeMessage);
+        }
+        this.listingRepository.delete(listing);
     }
 }

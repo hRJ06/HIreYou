@@ -1,5 +1,6 @@
 package com.Hindol.HireYou.Controller;
 
+import com.Hindol.HireYou.Entity.Listing;
 import com.Hindol.HireYou.Payload.ListingApplicationDTO;
 import com.Hindol.HireYou.Payload.ListingDTO;
 import com.Hindol.HireYou.Payload.OrganizationListingDTO;
@@ -57,5 +58,17 @@ public class ListingController {
     public ResponseEntity<List<ListingDTO>> getAllListings() {
         List<ListingDTO> listingDTOS = this.listingService.getAllListings();
         return new ResponseEntity<List<ListingDTO>>(listingDTOS,HttpStatus.OK);
+    }
+    @GetMapping("/search")
+    public ResponseEntity<List<ListingDTO>> searchListings(@RequestParam("search") String search) {
+        List<ListingDTO> listingDTOS = this.listingService.searchListing(search);
+        return new ResponseEntity<List<ListingDTO>>(listingDTOS,HttpStatus.OK);
+    }
+    @DeleteMapping("/delete/{listingId}")
+    public ResponseEntity<ResponseDTO> deleteListing(HttpServletRequest request,@PathVariable Integer listingId) {
+        String email = (String) request.getAttribute("Email");
+        String role = (String) request.getAttribute("Role");
+        ResponseDTO responseDTO = this.listingService.deleteListing(listingId,email,role);
+        return new ResponseEntity<ResponseDTO>(responseDTO,responseDTO.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }
