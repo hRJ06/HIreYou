@@ -4,11 +4,15 @@ import toast from 'react-hot-toast';
 import UploadModal from './UploadModal';
 import { useNavigate } from 'react-router-dom';
 import AddListingModal from './AddListingModal'; // Import the AddListingModal component
+import { FaEdit, FaTrash } from 'react-icons/fa';
+import DeleteModal from './DeleteModal';
 
 const Listings = () => {
     const [listings, setListings] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedListingId, setSelectedListingId] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [editListing, setEditListing] = useState(null);
     const navigate = useNavigate();
     const token = sessionStorage.getItem('token');
     const fetchListings = async () => {
@@ -49,7 +53,10 @@ const Listings = () => {
     useEffect(() => {
         fetchListings();
     }, []);
-
+    const handleEditListing = (listing) => {
+        setModalOpen(true);
+        setEditListing(listing);
+    }
     const handleApply = (listingId) => {
         setSelectedListingId(listingId);
         setModalOpen(true);
@@ -103,22 +110,47 @@ const Listings = () => {
         }
     };
 
-    const handleAddNewListing = async (newListingData) => {
+    const handleDelete = async () => {
         try {
-            toast.loading();
-            const response = await axios.post('http://localhost:8080/api/v1/listing/create', newListingData, {
+            await axios.delete(`http://localhost:8080/api/v1/listing/delete/${selectedListingId}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Authorization': `Bearer ${token}`
                 }
             });
-            console.log('New listing added:', response.data);
+            toast.success("Listing deleted successfully");
+            fetchListings();
+        } catch (error) {
+            console.error('Error deleting listing:', error);
+        }
+        // Close the modal after deletion attempt
+        setShowDeleteModal(false);
+    };
+    const handleListing = async (newListingData) => {
+        try {
+            toast.loading();
+            let response;
+            if (editListing) {
+                const listingId = editListing.id;
+                response = await axios.put(`http://localhost:8080/api/v1/listing/update/${listingId}`, newListingData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } else {
+                response = await axios.post('http://localhost:8080/api/v1/listing/create', newListingData, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }
             fetchListings();
             setModalOpen(false);
             toast.dismiss();
-            toast.success("New Listing Added");
+            toast.success(editListing ? "Successfully Edited Listing" : "New Listing Added");
         } catch (error) {
-            console.error('Error adding new listing:', error);
+            console.error(error);
         }
     };
 
@@ -153,6 +185,23 @@ const Listings = () => {
                             <button onClick={() => handleViewApplications(listing.id)} className="bg-green-500 text-white px-4 py-2 rounded-md mt-4 uppercase tracking-wider">View Applicants</button>
                         )}
                     </div>
+                    {sessionStorage.getItem('role') !== 'USER' && (
+                        <div className="flex justify-end mb-2">
+                            <FaTrash
+                                className="cursor-pointer mr-2 text-red-500"
+                                size={20}
+                                onClick={() => {
+                                    setShowDeleteModal(true);
+                                    setSelectedListingId(listing.id)
+                                }}
+                            />
+                            <FaEdit
+                                className="cursor-pointer text-blue-500"
+                                size={20}
+                                onClick={() => handleEditListing(listing)}
+                            />
+                        </div>
+                    )}
                 </div>
             ))}
             {sessionStorage.getItem('role') !== 'USER' && (
@@ -163,7 +212,12 @@ const Listings = () => {
             <UploadModal isOpen={modalOpen} onClose={handleCloseModal} onSubmit={handleSubmit} />
             {
                 sessionStorage.getItem('role') !== 'USER' &&
-                <AddListingModal isOpen={modalOpen} onClose={handleCloseNewListingModal} onSubmit={handleAddNewListing} />
+                <AddListingModal isOpen={modalOpen} onClose={handleCloseNewListingModal} onSubmit={handleListing} editListing={editListing} />
+            }
+            {
+                showDeleteModal && (
+                    <DeleteModal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} onDelete={handleDelete} />
+                )
             }
         </div>
     );

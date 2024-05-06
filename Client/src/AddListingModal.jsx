@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-const AddListingModal = ({ isOpen, onClose, onSubmit }) => {
+const AddListingModal = ({ isOpen, onClose, onSubmit, editListing }) => {
     const [newListing, setNewListing] = useState({
         position: '',
         about: '',
         rolesResponsibility: [],
         skills: [],
         salary: '',
-        currency: 'USD' 
+        currency: 'USD'
     });
 
     const handleInputChange = (e) => {
@@ -59,25 +59,40 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }) => {
         }));
     };
     const handleSubmit = () => {
-        
+
         const mergedSalary = `${newListing.salary} ${newListing.currency}`;
-        
+
         const updatedListing = {
             ...newListing,
             salary: mergedSalary
         };
-        
+
         onSubmit(updatedListing);
-        
+
         setNewListing({
             position: '',
             about: '',
             rolesResponsibility: [],
             skills: [],
             salary: '',
-            currency: 'USD' 
+            currency: 'USD'
         });
     };
+
+    useEffect(() => {
+        if (editListing) {
+            const { position, about, rolesResponsibility, skills, salary } = editListing;
+            const [amount, currency] = salary.split(' ');
+            setNewListing({
+                position: position || '',
+                about: about || '',
+                rolesResponsibility: rolesResponsibility || [],
+                skills: skills || [],
+                salary: amount || '',
+                currency: currency || 'USD'
+            });
+        }
+    }, [editListing]);
 
 
     return (
@@ -91,7 +106,11 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }) => {
                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div className="sm:flex sm:items-start">
                             <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4 uppercase tracking-wider text-center">Add New Listing</h3>
+                                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4 uppercase tracking-wider text-center">
+                                    {
+                                        editListing ? 'Edit Listing' : 'Add New Listing'
+                                    }
+                                </h3>
                                 <div className="mb-4">
                                     <label htmlFor="position" className="block text-sm font-medium text-gray-700 uppercase tracking-wider">Position</label>
                                     <input type="text" name="position" id="position" value={newListing.position} onChange={handleInputChange} className="mt-1 p-2 border border-gray-300 rounded-md w-full" />
@@ -148,7 +167,9 @@ const AddListingModal = ({ isOpen, onClose, onSubmit }) => {
                     </div>
                     <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-x-2">
                         <button onClick={handleSubmit} type="button" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-500 text-base leading-6 font-medium text-white hover:bg-blue-600 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5 mr-3 uppercase tracking-wider">
-                            Add Listing
+                            {
+                                editListing ? 'Edit' : 'Add'
+                            }
                         </button>
                         <button onClick={onClose} type="button" className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5 uppercase tracking-wider">
                             Cancel
