@@ -6,12 +6,14 @@ import { useNavigate } from 'react-router-dom';
 import AddListingModal from './AddListingModal'; // Import the AddListingModal component
 import { FaEdit, FaTrash } from 'react-icons/fa';
 import DeleteModal from './DeleteModal';
+import { CiSearch } from "react-icons/ci";
 
 const Listings = () => {
     const [listings, setListings] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedListingId, setSelectedListingId] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [editListing, setEditListing] = useState(null);
     const navigate = useNavigate();
     const token = sessionStorage.getItem('token');
@@ -125,6 +127,23 @@ const Listings = () => {
         // Close the modal after deletion attempt
         setShowDeleteModal(false);
     };
+
+    const handleSearch = async () => {
+        const query = searchQuery.trim();
+        toast.loading();
+        if (query) {
+            const response = await axios.get(`http://localhost:8080/api/v1/listing/search?search=${query}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            setListings(response?.data);
+            toast.dismiss();
+        }
+        else {
+            toast.error("Query cannot be empty")
+        }
+    };
     const handleListing = async (newListingData) => {
         try {
             toast.loading();
@@ -155,15 +174,30 @@ const Listings = () => {
     };
 
     return (
-        <div className="container mx-auto py-8 font-ubuntu">
+        <div className="container mx-auto py-8 font-ubuntu p-4">
             <h1 className="text-3xl font-bold mb-4 text-gray-800 text-center uppercase first-letter:text-4xl tracking-[1.2px]">Job Listings</h1>
+            <div className="relative mb-4">
+                <input
+                    type="text"
+                    placeholder="Search by position or organization"
+                    value={searchQuery}
+                    onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        if (e.target.value === '') {
+                            fetchListings();
+                        }
+                    }}
+                    className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:border-blue-500 w-full placeholder:uppercase lg:placeholder:text-sm placeholder:text-xs placeholder:tracking-wider"
+                />
+                <CiSearch className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 cursor-pointer" onClick={() => handleSearch()} />
+            </div>
             {listings.map((listing, index) => (
                 <div key={index} className="border p-4 mb-4 bg-gray-100 rounded-md">
                     <h2 className="text-xl font-bold uppercase tracking-wider">{listing.position} <span className='text-sm text-gray-500 font-normal underline underline-offset-2 cursor-pointer' onClick={() => navigate(`/organization/${listing?.organization?.id}`)}>{listing?.organization?.name}</span></h2>
                     <p className="text-gray-600 mb-4"><span className="font-bold uppercase tracking-wider">About -</span> <i>{listing.about}</i></p>
                     <div className="mb-4">
                         <p className="font-bold uppercase tracking-wider">Roles & Responsibilities</p>
-                        <ul className="list-disc pl-8">
+                        <ul className="list-disc pl-8 text-justify">
                             {listing.rolesResponsibility.map((role, index) => (
                                 <li key={index}>{role}</li>
                             ))}
@@ -171,7 +205,7 @@ const Listings = () => {
                     </div>
                     <div className="mb-4">
                         <p className="font-bold uppercase tracking-wider">Skills</p>
-                        <ul className="list-disc pl-8">
+                        <ul className="list-disc pl-8 text-justify">
                             {listing.skills.map((skill, index) => (
                                 <li key={index}>{skill}</li>
                             ))}

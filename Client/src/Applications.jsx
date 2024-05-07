@@ -62,7 +62,7 @@ const ApplicationsPage = () => {
     };
 
     return (
-        <div className="container mx-auto py-8 font-ubuntu">
+        <div className="container mx-auto py-8 font-ubuntu p-4">
             <h1 className="text-3xl font-bold mb-4 text-gray-800 text-center uppercase first-letter:text-4xl tracking-[1.2px]">Applications</h1>
             {applications.length === 0 ? (
                 <p className="text-center text-gray-600 uppercase tracking-wider underline underline-offset-2">No applications yet.</p>

@@ -1,0 +1,37 @@
+services:
+  web:
+    depends_on:
+      - api
+    build: ./Client
+    ports:
+      - 3000:3000
+    develop:
+      watch:
+        - path: ./Client/package.json
+          action: rebuild
+        - path: ./Client/package-lock.json
+          action: rebuild
+        - path: ./Client
+          target: /app
+          action: sync
+  api:
+    build: ./Server
+    depends_on:
+      - db
+    environment:
+      - spring.datasource.url=jdbc:mysql://db:3306/hireyou?createDatabaseIfNotExist=true
+      - spring.datasource.username=root
+      - spring.datasource.password=root
+    ports:
+      - 8080:8080
+  db:
+    image: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+    volumes:
+      - ./data:/var/lib/mysql
+    ports:
+      - 3307:3306
+
+networks:
+  spring-api-mysql-net:
